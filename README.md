@@ -59,7 +59,7 @@ El sistema está compuesto por cuatro agentes que se comunican mediante mensajes
 3. `AgenteClasificador` notifica al monitor con `EN_ESPERA`.
 4. `AgenteMedico` recibe al paciente → notifica al monitor con `EN_CONSULTA` → al finalizar notifica con `ATENDIDO`.
 
-![Diagrama realizado con drawio]("C:\Users\laura\Downloads\SI.drawio.png")
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("imagen.png"))
 
 ## Datos de ejemplo
 
