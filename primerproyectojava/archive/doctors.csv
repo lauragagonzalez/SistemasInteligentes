@@ -1,0 +1,17 @@
+doctor_id,first_name,last_name,specialization,phone_number,years_experience,hospital_branch,email
+
+D001,David,Taylor,Dermatology,8322010158,17,Westside Clinic,dr.david.taylor@hospital.com
+D002,Jane,Davis,Pediatrics,9004382050,24,Eastside Clinic,dr.jane.davis@hospital.com
+D003,Robert,Wilson,General Practice,8737740598,19,Eastside Clinic,dr.robert.wilson@hospital.com
+D004,Laura,Jones,Pediatrics,6594221991,28,Central Hospital,dr.laura.jones@hospital.com
+D005,Sarah,Taylor,Dermatology,9118538547,26,Central Hospital,dr.sarah.taylor@hospital.com
+D006,Alex,Brown,Geriatrics,6570137231,23,Central Hospital,dr.alex.brown@hospital.com
+D007,Robert,Davis,Oncology,8217493115,26,Westside Clinic,dr.robert.davis@hospital.com
+D008,Linda,Brown,Dermatology,9069162601,5,Westside Clinic,dr.linda.brown@hospital.com
+D009,Maria,Smith,Pediatrics,7387087517,26,Central Hospital,dr.maria.smith@hospital.com
+D010,Linda,Wilson,Oncology,6176383634,21,Eastside Clinic,dr.linda.wilson@hospital.com
+D011,Carlos,Martinez,General Practice,612334556,12,Central Hospital,dr.carlos.martinez@hospital.com
+D012,Elena,García,Geriatrics,633778899,18,Westside Clinic,dr.elena.garcia@hospital.co
+D013,Juan,Lopez,Pediatrics,677889900,10,Eastside Clinic,dr.juan.lopez@hospital.com
+D014,Isabel,Reyes,General Practice,699112233,14,Central Hospital,dr.isabel.reyes@hospital.com
+D015,Pedro,Santos,Geriatrics,611223344,30,Westside Clinic,dr.pedro.santos@hospital.com
