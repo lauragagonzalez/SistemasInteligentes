@@ -15,7 +15,6 @@ Sistema multiagente desarrollado con JADE y Eclipse que simula la gestión de pa
 
 
 
-## Estructura del proyecto
 
 ## Instrucciones de ejecución
 
@@ -59,13 +58,25 @@ El sistema está compuesto por cuatro agentes que se comunican mediante mensajes
 3. `AgenteClasificador` notifica al monitor con `EN_ESPERA`.
 4. `AgenteMedico` recibe al paciente → notifica al monitor con `EN_CONSULTA` → al finalizar notifica con `ATENDIDO`.
 
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("imagen.png"))
+SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'ESQUEMA.DRAWIO.PDF
+
 
 ## Datos de ejemplo
 
 Introduce los siguientes pacientes para verificar el funcionamiento completo del sistema:
 
-| DNI | Nombre || |  |
+| Nombre | Apellido | DNI        | Fecha nacimiento | Teléfono   | Appointment   |
+|--------|----------|------------|------------------|------------|---------------|
+| Juan   | Pérez    | 12345678A  | 1995-04-12       | 612345678  | No            | 
+| Lucía  | Gómez    | 98765432B  | 2010-09-20       | 623456789  | No            |
+| Carlos | Ruiz     | 45678912C  | 1968-02-03       | 634567890  | No            |
+| Ana    | López    | 11223344D  | 1987-11-15       | 645678901  | YES           |
+| David  | Davis    | 12345677H  | 1976-07-05       | 709055839  | YES           |
+| Laura  | Davis    | 123456781  | 1971-12-11       | 706032461  | YES           |
+| Michael| Taylor   | 12345679J  | 2001-10-13       | 708139673  | YES           |
+| Emily  | Jones    | 12345678A  | 1966-12-04       | 899060407  | YES           |
+
+
 
 ## Declaración de uso de IA
 
