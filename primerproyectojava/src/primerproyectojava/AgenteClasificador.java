@@ -33,6 +33,7 @@ public class AgenteClasificador extends Agent {
     private Map<String, String> motivoPorPaciente       = new HashMap<>();
     private Map<String, String> fechaCitaPorPaciente    = new HashMap<>();
     private Map<String, String> idPorDni                = new HashMap<>();
+    private Map<String, Integer> colasPorEspecialidad   = new HashMap<>();
 
     private final List<String> colaEspera = new ArrayList<>();
 
@@ -98,15 +99,22 @@ public class AgenteClasificador extends Agent {
                     } else {
                         colaEspera.add(mensajeParaMedico);
 
-                        System.out.println("Clasificador: medico no disponible para " + especialidad + ". EN ESPERA. Cola = " + colaEspera.size());
+                        int enCola = colasPorEspecialidad.getOrDefault(especialidad, 0) + 1;
+                        colasPorEspecialidad.put(especialidad, enCola);
+                        int minutosEspera = (enCola * 90) / 60;
+
+                        System.out.println("Clasificador: medico no disponible para " + especialidad
+                                + ". EN ESPERA. Cola = " + colaEspera.size());
 
                         String nombreMonitor = buscarMonitorEnDF();
                         if (nombreMonitor != null) {
                             ACLMessage avisoEspera = new ACLMessage(ACLMessage.INFORM);
                             avisoEspera.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                            avisoEspera.setContent("EN_ESPERA," + mensajeParaMedico);
+                            avisoEspera.setContent("EN_ESPERA," + mensajeParaMedico
+                                    + ",espera_estimada=" + minutosEspera + "min");
                             send(avisoEspera);
-                            System.out.println("Clasificador: monitor avisado -> EN_ESPERA");
+                            System.out.println("Clasificador: monitor avisado -> EN_ESPERA (~"
+                                    + minutosEspera + " min)");
                         }
                     }
 
@@ -138,6 +146,8 @@ public class AgenteClasificador extends Agent {
                     String medicoDisponible = buscarMedicoEnDF(esp);
                     if (medicoDisponible != null) {
                         enviarAlMedico(medicoDisponible, mensajeParaMedico);
+                        int restantes = colasPorEspecialidad.getOrDefault(esp, 1) - 1;
+                        colasPorEspecialidad.put(esp, Math.max(0, restantes));
                     } else {
                         colaEspera.add(mensajeParaMedico);
                         System.out.println("Clasificador: sin medico libre para " + esp + ", vuelve a cola.");
@@ -393,7 +403,7 @@ public class AgenteClasificador extends Agent {
             int edadAproximada = java.time.LocalDate.now().getYear() - anioNacimiento;
             System.out.println("Clasificador: edad aproximada = " + edadAproximada);
             if (edadAproximada < 16) return "pediatria";
-            if (edadAproximada > 65) return "geriatria";
+            if (edadAproximada > 75) return "geriatria";
             return "medicina_general";
         } catch (Exception e) {
             System.out.println("Clasificador: error al calcular especialidad por edad.");

@@ -12,6 +12,9 @@ import jade.domain.FIPAException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class AgenteRecepcion extends Agent {
 
@@ -29,7 +32,6 @@ public class AgenteRecepcion extends Agent {
     protected void setup() {
         System.out.println("Recepcion: agente iniciado.");
 
-
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
         ServiceDescription sd = new ServiceDescription();
@@ -43,9 +45,7 @@ public class AgenteRecepcion extends Agent {
             e.printStackTrace();
         }
 
-
         SwingUtilities.invokeLater(() -> crearVentana());
-
 
         addBehaviour(new CyclicBehaviour(this) {
             private static final long serialVersionUID = 1L;
@@ -63,7 +63,7 @@ public class AgenteRecepcion extends Agent {
             }
         });
     }
-    
+
     private boolean validarDNI(String dni) {
         return dni.matches("\\d{8}[A-Za-z]");
     }
@@ -72,10 +72,28 @@ public class AgenteRecepcion extends Agent {
         return telefono.matches("\\d{9}");
     }
 
-    private boolean validarFecha(String fecha) {
-        return fecha.matches("\\d{4}-\\d{2}-\\d{2}");
+    // Devuelve null si es válida, o el mensaje de error si no lo es
+    private String validarFecha(String fecha) {
+        if (!fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return "Formato incorrecto (debe ser YYYY-MM-DD)";
+        }
+        try {
+            LocalDate fechaNac = LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate hoy      = LocalDate.now();
+
+            if (fechaNac.isAfter(hoy)) {
+                return "La fecha de nacimiento no puede ser futura";
+            }
+            if (fechaNac.isBefore(hoy.minusYears(120))) {
+                return "Fecha de nacimiento no válida (más de 120 años)";
+            }
+            return null; // válida
+
+        } catch (DateTimeParseException e) {
+            return "Fecha inexistente (ej: 31 de febrero no existe)";
+        }
     }
-    
+
     private void crearVentana() {
         JFrame ventana = new JFrame("Recepción del Hospital");
         ventana.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -111,7 +129,6 @@ public class AgenteRecepcion extends Agent {
         panelFormulario.add(new JLabel());
         panelFormulario.add(botonEnviar);
 
-
         areaLog = new JTextArea(8, 40);
         areaLog.setEditable(false);
         areaLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -119,7 +136,6 @@ public class AgenteRecepcion extends Agent {
         areaLog.setForeground(new Color(180, 255, 180));
         JScrollPane scroll = new JScrollPane(areaLog);
         scroll.setBorder(BorderFactory.createTitledBorder("Log de actividad"));
-
 
         botonEnviar.addActionListener(e -> enviarPaciente());
 
@@ -140,17 +156,16 @@ public class AgenteRecepcion extends Agent {
         if (nombre.isEmpty()) {
             errores.append("- Nombre vacío\n");
         }
-
         if (apellido.isEmpty()) {
             errores.append("- Apellido vacío\n");
         }
-
         if (!validarDNI(dni)) {
-            errores.append("- DNI inválido (formato 12345678A)\n");
+            errores.append("- DNI inválido (formato: 12345678A)\n");
         }
 
-        if (!validarFecha(fecha)) {
-            errores.append("- Fecha inválida (formato YYYY-MM-DD)\n");
+        String errorFecha = validarFecha(fecha);
+        if (errorFecha != null) {
+            errores.append("- Fecha: ").append(errorFecha).append("\n");
         }
 
         if (!validarTelefono(telefono)) {
@@ -180,8 +195,6 @@ public class AgenteRecepcion extends Agent {
         campoFechaNacimiento.setText("YYYY-MM-DD");
         campoTelefono.setText("");
     }
-
-
 
     @Override
     protected void takeDown() {

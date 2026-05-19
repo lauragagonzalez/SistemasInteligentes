@@ -42,7 +42,6 @@ public class AgenteMedico extends Agent {
                         return;
                     }
 
-                    // Consulta terminada
                     registrarEnDF();
                     System.out.println("Medico [" + getLocalName() + "]: disponible de nuevo.");
 
@@ -54,7 +53,7 @@ public class AgenteMedico extends Agent {
                     if (nombreMonitor != null) {
                         ACLMessage notifFin = new ACLMessage(ACLMessage.INFORM);
                         notifFin.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                        notifFin.setContent("ATENDIDO," + msgEnProceso.getContent());
+                        notifFin.setContent("ATENDIDO," + msgEnProceso.getContent() + ",medico=" + getLocalName());
                         myAgent.send(notifFin);
                         System.out.println("Medico [" + getLocalName() + "]: monitor notificado -> ATENDIDO");
                     }
@@ -90,12 +89,12 @@ public class AgenteMedico extends Agent {
                 if (nombreMonitor != null) {
                     ACLMessage notifEntrada = new ACLMessage(ACLMessage.INFORM);
                     notifEntrada.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                    notifEntrada.setContent("EN_CONSULTA," + contenido);
+                    notifEntrada.setContent("EN_CONSULTA," + contenido + ",medico=" + getLocalName());
                     myAgent.send(notifEntrada);
                     System.out.println("Medico [" + getLocalName() + "]: monitor avisado -> EN consulta");
                 }
 
-                int segundosConsulta = 45 + (int)(Math.random() * 5);
+                int segundosConsulta = 90 + (int)(Math.random() * 5);
                 System.out.println("Medico [" + getLocalName() + "]: consultando durante " + segundosConsulta + " segundos...");
                 tiempoFinConsulta = System.currentTimeMillis() + (segundosConsulta * 1000L);
                 msgEnProceso = msg;
