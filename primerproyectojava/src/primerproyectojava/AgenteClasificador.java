@@ -34,6 +34,7 @@ public class AgenteClasificador extends Agent {
     private Map<String, String> fechaCitaPorPaciente    = new HashMap<>();
     private Map<String, String> idPorDni                = new HashMap<>();
     private Map<String, Integer> colasPorEspecialidad   = new HashMap<>();
+    private Map<String, String> salaPorDoctor = new HashMap<>();
 
     private final List<String> colaEspera = new ArrayList<>();
 
@@ -175,13 +176,14 @@ public class AgenteClasificador extends Agent {
 
                 String doctorId     = datos[0].trim();
                 String especialidad = normalizarEspecialidad(datos[3].trim());
-                String nombreAgente = "medico_" + doctorId;
+                String nombreAgente = doctorId;
+                String sala = salaPorDoctor.getOrDefault(doctorId, doctorId);
 
                 try {
                     AgentController ac = cc.createNewAgent(
                         nombreAgente,
                         "primerproyectojava.AgenteMedico",
-                        new Object[]{ especialidad }
+                        new Object[]{ especialidad, sala }
                     );
                     ac.start();
                     System.out.println("Clasificador: agente creado -> " + nombreAgente + " (" + especialidad + ")");
@@ -329,6 +331,10 @@ public class AgenteClasificador extends Agent {
                     String doctorId                = datos[0].trim();
                     String especialidadNormalizada = normalizarEspecialidad(datos[3].trim());
                     especialidadPorDoctor.put(doctorId, especialidadNormalizada);
+                    
+                    // Si doctors.csv tiene columna sala, la usa. Si no, genera una sala automática.
+                    String sala = datos[8].trim().isEmpty() ? doctorId : datos[8].trim();
+                    salaPorDoctor.put(doctorId, sala);
                 }
             }
             scDoctors.close();
@@ -358,7 +364,7 @@ public class AgenteClasificador extends Agent {
                         especialidadPorPaciente.put(patientId, especialidad);
                         prioridadPorPaciente.put(patientId, calcularPrioridadDesdeMotivo(motivoConsulta, especialidad));
                         motivoPorPaciente.put(patientId, motivoConsulta);
-                        fechaCitaPorPaciente.put(patientId, fechaCita);
+
                     }
                 }
             }
@@ -414,20 +420,44 @@ public class AgenteClasificador extends Agent {
     private String calcularPrioridad(String paciente) {
         String[] datos = paciente.split(",");
         if (datos.length < 1) return "DESCONOCIDA";
-        String patientId = idPorDni.get(datos[0].trim());
+
+        String dni = datos[0].trim();
+        String patientId = idPorDni.get(dni);
+
+        int puntuacion = 1; 
+
+
         if (patientId != null && prioridadPorPaciente.containsKey(patientId)) {
-            return prioridadPorPaciente.get(patientId);
+            String prioridadBase = prioridadPorPaciente.get(patientId);
+
+            if (prioridadBase.equalsIgnoreCase("ALTA")) {
+                puntuacion = 3;
+            } else if (prioridadBase.equalsIgnoreCase("MEDIA")) {
+                puntuacion = 2;
+            } else {
+                puntuacion = 1;
+            }
         }
+
+
         if (datos.length >= 5) {
             try {
                 int edad = java.time.LocalDate.now().getYear()
-                         - Integer.parseInt(datos[4].trim().substring(0, 4));
-                if (edad < 5 || edad > 75) return "ALTA";
-                if (edad > 65)             return "MEDIA";
+                        - Integer.parseInt(datos[4].trim().substring(0, 4));
+
+                if (edad < 5 || edad > 75) {
+                    puntuacion += 1;
+                } else if (edad > 65) {
+                    puntuacion += 1;
+                }
+
             } catch (Exception e) {
                 return "DESCONOCIDA";
             }
         }
+
+        if (puntuacion >= 3) return "ALTA";
+        if (puntuacion == 2) return "MEDIA";
         return "NORMAL";
     }
 
