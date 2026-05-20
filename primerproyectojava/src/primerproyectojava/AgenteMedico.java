@@ -14,6 +14,7 @@ public class AgenteMedico extends Agent {
 
     private static final long serialVersionUID = 1L;
     private String especialidad = "medicina_general";
+    private String sala = "Sala-desconocida";
 
     @Override
     protected void setup() {
@@ -21,9 +22,15 @@ public class AgenteMedico extends Agent {
         if (args != null && args.length > 0) {
             especialidad = args[0].toString().toLowerCase().trim();
         }
+        
+        if (args != null && args.length > 1) {
+            sala = args[1].toString().trim();
+        } else {
+            sala = "Sala-" + getLocalName().replace("medico_", "");
+        }
 
-        System.out.println("Medico: El doctor [" + getLocalName() + "] ha llegado. Especialidad: " + especialidad);
-
+        System.out.println("Medico: El doctor [" + getLocalName() + "] ha llegado. Especialidad: "
+                + especialidad + ". Sala: " + sala);
         registrarEnDF();
 
         addBehaviour(new CyclicBehaviour(this) {
@@ -53,7 +60,9 @@ public class AgenteMedico extends Agent {
                     if (nombreMonitor != null) {
                         ACLMessage notifFin = new ACLMessage(ACLMessage.INFORM);
                         notifFin.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                        notifFin.setContent("ATENDIDO," + msgEnProceso.getContent() + ",medico=" + getLocalName());
+                        notifFin.setContent("ATENDIDO," + msgEnProceso.getContent()
+                        	+ ",medico=" + getLocalName()
+                        	+ ",sala=" + sala);
                         myAgent.send(notifFin);
                         System.out.println("Medico [" + getLocalName() + "]: monitor notificado -> ATENDIDO");
                     }
@@ -89,7 +98,9 @@ public class AgenteMedico extends Agent {
                 if (nombreMonitor != null) {
                     ACLMessage notifEntrada = new ACLMessage(ACLMessage.INFORM);
                     notifEntrada.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                    notifEntrada.setContent("EN_CONSULTA," + contenido + ",medico=" + getLocalName());
+                    notifEntrada.setContent("EN_CONSULTA," + contenido
+                            + ",medico=" + getLocalName()
+                            + ",sala=" + sala);
                     myAgent.send(notifEntrada);
                     System.out.println("Medico [" + getLocalName() + "]: monitor avisado -> EN consulta");
                 }
