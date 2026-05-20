@@ -86,7 +86,7 @@ public class AgenteMonitor extends Agent {
         ventana.add(titulo, BorderLayout.NORTH);
 
         // COLUMNA MÉDICO AÑADIDA (índice 3)
-        String[] columnas = {"DNI / ID", "Nombre", "Especialidad", "Médico", "Prioridad", "Espera est.", "Estado"};
+        String[] columnas = {"DNI / ID", "Nombre", "Especialidad", "Médico", "Sala", "Prioridad", "Espera est.", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
@@ -101,7 +101,7 @@ public class AgenteMonitor extends Agent {
         tabla.setSelectionBackground(new Color(200, 220, 255));
 
         // Columna Prioridad → ahora índice 4
-        tabla.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+        tabla.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
                     boolean isSelected, boolean hasFocus, int row, int col) {
@@ -124,7 +124,7 @@ public class AgenteMonitor extends Agent {
         });
 
         // Columna Espera est. → ahora índice 5
-        tabla.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
                     boolean isSelected, boolean hasFocus, int row, int col) {
@@ -147,7 +147,7 @@ public class AgenteMonitor extends Agent {
         });
 
         // Columna Estado → ahora índice 6
-        tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+        tabla.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
                     boolean isSelected, boolean hasFocus, int row, int col) {
@@ -201,10 +201,10 @@ public class AgenteMonitor extends Agent {
 
             if (fila != null) {
                 if (restanteMs <= 0) {
-                    modeloTabla.setValueAt("¡Ahora!", fila, 5); // col 5 = Espera est.
+                    modeloTabla.setValueAt("¡Ahora!", fila, 6);
                 } else {
                     long minutos = restanteMs / 60_000;
-                    modeloTabla.setValueAt(minutos + " min", fila, 5);
+                    modeloTabla.setValueAt(minutos + "min", fila, 6);
                 }
             }
         }
@@ -246,7 +246,8 @@ public class AgenteMonitor extends Agent {
         String dni          = "?";
         String nombre       = "?";
         String especialidad = "?";
-        String medico       = "-";   // NUEVO
+        String medico       = "-";   
+        String sala		    = "-";		// NUEVO
         String prioridad    = "?";
         String espera       = "-";
 
@@ -262,8 +263,10 @@ public class AgenteMonitor extends Agent {
                 prioridad = parte.replace("prioridad_asignada=", "").trim();
             if (parte.startsWith("espera_estimada="))
                 espera = parte.replace("espera_estimada=", "").trim();
-            if (parte.startsWith("medico="))               // NUEVO
+            if (parte.startsWith("medico="))               
                 medico = parte.replace("medico=", "").trim();
+            if (parte.startsWith("sala="))				// NUEVO
+                sala = parte.replace("sala=", "").trim();
         }
 
         if (enEspera) {
@@ -273,18 +276,19 @@ public class AgenteMonitor extends Agent {
             } catch (NumberFormatException ex) { }
 
             // médico en col 3, prioridad en col 4, espera en col 5, estado en col 6
-            modeloTabla.addRow(new Object[]{dni, nombre, especialidad, medico, prioridad, espera, "En espera"});
+            modeloTabla.addRow(new Object[]{dni, nombre, especialidad, medico, sala, prioridad, espera, "En espera"});
             filasPorDni.put(dni, modeloTabla.getRowCount() - 1);
 
         } else if (enConsulta) {
             tiemposPorDni.remove(dni);
             Integer fila = filasPorDni.get(dni);
             if (fila != null) {
-                modeloTabla.setValueAt(medico, fila, 3);       // actualiza médico
-                modeloTabla.setValueAt("-",    fila, 5);       // espera
-                modeloTabla.setValueAt("En consulta", fila, 6); // estado
+                modeloTabla.setValueAt(medico, fila, 3);      
+                modeloTabla.setValueAt(sala,   fila, 4);
+                modeloTabla.setValueAt("-",    fila, 6);       // espera
+                modeloTabla.setValueAt("En consulta", fila, 7); // estado
             } else {
-                modeloTabla.addRow(new Object[]{dni, nombre, especialidad, medico, prioridad, "-", "En consulta"});
+                modeloTabla.addRow(new Object[]{dni, nombre, especialidad, medico, sala, prioridad, "-", "En consulta"});
                 filasPorDni.put(dni, modeloTabla.getRowCount() - 1);
             }
 
@@ -292,8 +296,8 @@ public class AgenteMonitor extends Agent {
             tiemposPorDni.remove(dni);
             Integer fila = filasPorDni.get(dni);
             if (fila != null) {
-                modeloTabla.setValueAt("-",        fila, 5); // espera
-                modeloTabla.setValueAt("Atendido", fila, 6); // estado
+                modeloTabla.setValueAt("-",        fila, 6); // espera
+                modeloTabla.setValueAt("Atendido", fila, 7); // estado
             }
             totalPacientes++;
             etiquetaTotal.setText(String.valueOf(totalPacientes));
