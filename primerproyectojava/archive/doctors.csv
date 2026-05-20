@@ -1,0 +1,11 @@
+doctor_id,first_name,last_name,specialization,phone_number,years_experience,hospital_branch,email,sala
+D002,Jane,Davis,Pediatrics,9004382050,24,Eastside Clinic,dr.jane.davis@hospital.com,S-101
+D004,Laura,Jones,Pediatrics,6594221991,28,Central Hospital,dr.laura.jones@hospital.com,S-102
+D005,Sarah,Taylor,Dermatology,9118538547,26,Central Hospital,dr.sarah.taylor@hospital.com,S-103
+D006,Alex,Brown,Geriatrics,6570137231,23,Central Hospital,dr.alex.brown@hospital.com,S-104
+D007,Robert,Davis,Oncology,8217493115,26,Westside Clinic,dr.robert.davis@hospital.com,S-105
+D008,Linda,Brown,Dermatology,9069162601,5,Westside Clinic,dr.linda.brown@hospital.com,S-106
+D009,Maria,Smith,Pediatrics,7387087517,26,Central Hospital,dr.maria.smith@hospital.com,S-107
+D010,Linda,Wilson,Oncology,6176383634,21,Eastside Clinic,dr.linda.wilson@hospital.com,S-108
+D011,Carlos,Martinez,General Practice,612334556,12,Central Hospital,dr.carlos.martinez@hospital.com,S-109
+D012,Elena,Garcia,Geriatrics,633778899,18,Westside Clinic,dr.elena.garcia@hospital.com,S-110
