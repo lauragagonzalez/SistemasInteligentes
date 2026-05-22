@@ -65,16 +65,29 @@ SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'ESQUEMA.DRAWIO.PDF
 
 Introduce los siguientes pacientes para verificar el funcionamiento completo del sistema:
 
-| Nombre | Apellido | DNI        | Fecha nacimiento | Teléfono   | Appointment   |
-|--------|----------|------------|------------------|------------|---------------|
-| Juan   | Pérez    | 12345678A  | 1995-04-12       | 612345678  | No            | 
-| Lucía  | Gómez    | 98765432B  | 2010-09-20       | 623456789  | No            |
-| Carlos | Ruiz     | 45678912C  | 1968-02-03       | 634567890  | No            |
-| Ana    | López    | 11223344D  | 1987-11-15       | 645678901  | YES           |
-| David  | Davis    | 12345677H  | 1976-07-05       | 709055839  | YES           |
-| Laura  | Davis    | 123456781  | 1971-12-11       | 706032461  | YES           |
-| Michael| Taylor   | 12345679J  | 2001-10-13       | 708139673  | YES           |
-| Emily  | Jones    | 12345678A  | 1966-12-04       | 899060407  | YES           |
+| Patient ID | Nombre | Fecha Nacimiento | Especialidad | Motivo | Estado | Teléfono | DNI |
+|------------|---------|------------------|---------------|---------|---------|-----------|-------------|
+| P001 | David Williams | 1955-06-04 | Oncología | Cancer Screening | Scheduled | 693958518 | 12345670A |
+| P039 | Jane Wilson | 1950-12-12 | Oncología | Chemotherapy Review | Scheduled | 927113133 | 20202020C |
+| P045 | Linda Miller | 1966-04-25 | Geriatría | Blood Pressure Check | Scheduled | 757961653 | 26262626I |
+| P003 | Laura Jones | 1977-08-21 | Pediatría | Child Fever | Scheduled | 839702984 | 12345672C |
+| P037 | Robert Williams | 1999-02-05 | Pediatría | Child Emergency | Scheduled | 888680019 | 18181818A |
+| P016 | Michael Taylor | 2000-07-22 | Dermatología | Acne Treatment | Scheduled | 722338059 | 67890123F |
+| P024 | Sarah Brown | 1991-11-04 | Dermatología | Skin Infection | Completed | 719677744 | 44444444N |
+| P005 | David Wilson | 1960-06-23 | Dermatología | Dermatology Therapy | Scheduled | 773446315 | 12345674E |
+| P010 | Michael Taylor | 2001-10-13 | Oncología | Oncology Checkup | Completed | 708139673 | 12345679J |
+| P014 | Alex Taylor | 1968-02-27 | Medicina General | General Practice Visit | Completed | 729226251 | 45678901D |
+| P036 | Michael Wilson | 1997-12-26 | Medicina General | General Follow-up | Scheduled | 854561304 | 17171717Z |
+| P029 | David Smith | 2005-05-15 | Medicina General | Routine Checkup | Completed | 892360767 | 99999999S |
+
+Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejemplo:
+| Nombre   | Apellido   | DNI       | Fecha de nacimiento | Teléfono     |
+|----------|------------|-----------|---------------------|--------------|
+| Laura    | Martínez   | 48219375K | 1999-03-12          | 612 345 987 | MEDICINA GENERAL
+| Carlos   | Gómez      | 73918462T | 1946-11-27          | 678 901 234 | GERIATRIA
+| Ana      | Rodríguez  | 56192748H | 2001-06-08          | 623 778 145 | MEDICINA GENERAL
+| David    | López      | 90481726M | 2015-09-21          | 655 439 820 | PEDIATRIA
+| Sofía    | Hernández  | 31874659P | 2017-01-15          | 699 120 553 | PEDIATRIA
 
 
 
