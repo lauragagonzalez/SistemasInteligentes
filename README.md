@@ -73,12 +73,12 @@ Introduce los siguientes pacientes para verificar el funcionamiento completo del
 | P003 | Laura Jones | 1977-08-21 | Pediatría | Child Fever | Scheduled | 839702984 | 12345672C |
 | P037 | Robert Williams | 1999-02-05 | Pediatría | Child Emergency | Scheduled | 888680019 | 18181818A |
 | P016 | Michael Taylor | 2000-07-22 | Dermatología | Acne Treatment | Scheduled | 722338059 | 67890123F |
-| P024 | Sarah Brown | 1991-11-04 | Dermatología | Skin Infection | Completed | 719677744 | 44444444N |
+| P024 | Sarah Brown | 1991-11-04 | Dermatología | Skin Infection | Scheduled | 719677744 | 44444444N |
 | P005 | David Wilson | 1960-06-23 | Dermatología | Dermatology Therapy | Scheduled | 773446315 | 12345674E |
-| P010 | Michael Taylor | 2001-10-13 | Oncología | Oncology Checkup | Completed | 708139673 | 12345679J |
-| P014 | Alex Taylor | 1968-02-27 | Medicina General | General Practice Visit | Completed | 729226251 | 45678901D |
+| P010 | Michael Taylor | 2001-10-13 | Oncología | Oncology Checkup | Scheduled | 708139673 | 12345679J |
+| P014 | Alex Taylor | 1968-02-27 | Medicina General | General Practice Visit | Scheduled | 729226251 | 45678901D |
 | P036 | Michael Wilson | 1997-12-26 | Medicina General | General Follow-up | Scheduled | 854561304 | 17171717Z |
-| P029 | David Smith | 2005-05-15 | Medicina General | Routine Checkup | Completed | 892360767 | 99999999S |
+| P029 | David Smith | 2005-05-15 | Medicina General | Routine Checkup | Scheduled | 892360767 | 99999999S |
 
 Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejemplo:
 | Nombre   | Apellido   | DNI       | Fecha de nacimiento | Teléfono     |
