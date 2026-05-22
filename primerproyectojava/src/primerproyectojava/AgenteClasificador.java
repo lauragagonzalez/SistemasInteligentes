@@ -34,6 +34,7 @@ public class AgenteClasificador extends Agent {
     private Map<String, String> fechaCitaPorPaciente    = new HashMap<>();
     private Map<String, String> idPorDni                = new HashMap<>();
     private Map<String, Integer> colasPorEspecialidad   = new HashMap<>();
+    private Map<String, Boolean> tieneCitaPorPaciente = new HashMap<>();
     private Map<String, String> salaPorDoctor = new HashMap<>();
 
     private final List<String> colaEspera = new ArrayList<>();
@@ -88,17 +89,20 @@ public class AgenteClasificador extends Agent {
                     System.out.println("Clasificador: prioridad asignada = "    + prioridad);
 
                     guardarPacienteNuevo(paciente, especialidad, prioridad);
+                    
+                    boolean tieneCita = pacienteTieneCita(paciente);
 
                     String mensajeParaMedico = paciente
                             + ",especialidad_asignada=" + especialidad
-                            + ",prioridad_asignada="    + prioridad;
+                            + ",prioridad_asignada="    + prioridad
+                    		+ ",cita_previa="           + (tieneCita ? "SI" : "NO");
 
                     String nombreMedico = buscarMedicoEnDF(especialidad);
 
                     if (nombreMedico != null) {
                         enviarAlMedico(nombreMedico, mensajeParaMedico);
                     } else {
-                        colaEspera.add(mensajeParaMedico);
+                    	insertarEnColaOrdenada(mensajeParaMedico);
 
                         int enCola = colasPorEspecialidad.getOrDefault(especialidad, 0) + 1;
                         colasPorEspecialidad.put(especialidad, enCola);
@@ -176,8 +180,8 @@ public class AgenteClasificador extends Agent {
 
                 String doctorId     = datos[0].trim();
                 String especialidad = normalizarEspecialidad(datos[3].trim());
-                String nombreAgente = doctorId;
-                String sala = salaPorDoctor.getOrDefault(doctorId, doctorId);
+                String nombreAgente = "medico_" + doctorId;
+                String sala = datos.length >= 5 ? datos[4].trim() : "Sala-" + doctorId;
 
                 try {
                     AgentController ac = cc.createNewAgent(
@@ -333,7 +337,7 @@ public class AgenteClasificador extends Agent {
                     especialidadPorDoctor.put(doctorId, especialidadNormalizada);
                     
                     // Si doctors.csv tiene columna sala, la usa. Si no, genera una sala automática.
-                    String sala = datos[8].trim().isEmpty() ? doctorId : datos[8].trim();
+                    String sala = datos.length >= 5 ? datos[4].trim() : "Sala-" + doctorId;
                     salaPorDoctor.put(doctorId, sala);
                 }
             }
@@ -364,7 +368,8 @@ public class AgenteClasificador extends Agent {
                         especialidadPorPaciente.put(patientId, especialidad);
                         prioridadPorPaciente.put(patientId, calcularPrioridadDesdeMotivo(motivoConsulta, especialidad));
                         motivoPorPaciente.put(patientId, motivoConsulta);
-
+                        fechaCitaPorPaciente.put(patientId, fechaCita);
+                        tieneCitaPorPaciente.put(patientId, true);
                     }
                 }
             }
@@ -424,9 +429,9 @@ public class AgenteClasificador extends Agent {
         String dni = datos[0].trim();
         String patientId = idPorDni.get(dni);
 
-        int puntuacion = 1; 
+        int puntuacion = 1; // NORMAL por defecto
 
-
+        // Prioridad previa por cita/motivo
         if (patientId != null && prioridadPorPaciente.containsKey(patientId)) {
             String prioridadBase = prioridadPorPaciente.get(patientId);
 
@@ -439,7 +444,12 @@ public class AgenteClasificador extends Agent {
             }
         }
 
+        // Bonus por tener cita previa
+        if (patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false)) {
+            puntuacion += 1;
+        }
 
+        // Bonus por edad vulnerable
         if (datos.length >= 5) {
             try {
                 int edad = java.time.LocalDate.now().getYear()
@@ -467,6 +477,40 @@ public class AgenteClasificador extends Agent {
         if (motivoConsulta.equalsIgnoreCase("Therapy")
          || motivoConsulta.equalsIgnoreCase("Consultation"))         return "MEDIA";
         return "NORMAL";
+    }
+    
+    private boolean pacienteTieneCita(String paciente) {
+        String[] datos = paciente.split(",");
+        if (datos.length < 1) return false;
+
+        String dni = datos[0].trim();
+        String patientId = idPorDni.get(dni);
+
+        return patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false);
+    }
+
+    private int nivelPrioridadCola(String mensaje) {
+        if (mensaje.contains("cita_previa=SI")) return 4;
+        if (mensaje.contains("prioridad_asignada=ALTA")) return 3;
+        if (mensaje.contains("prioridad_asignada=MEDIA")) return 2;
+        return 1;
+    }
+
+    private void insertarEnColaOrdenada(String mensaje) {
+        int nivelNuevo = nivelPrioridadCola(mensaje);
+        int posicion = 0;
+
+        while (posicion < colaEspera.size()) {
+            int nivelActual = nivelPrioridadCola(colaEspera.get(posicion));
+
+            if (nivelNuevo > nivelActual) {
+                break;
+            }
+
+            posicion++;
+        }
+
+        colaEspera.add(posicion, mensaje);
     }
 
     @Override
