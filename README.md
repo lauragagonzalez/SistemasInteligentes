@@ -62,21 +62,22 @@ SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'ESQUEMA.DRAWIO.PDF
 
 
 ## Datos de ejemplo
-
 Introduce los siguientes pacientes para verificar el funcionamiento completo del sistema:
 
-| Appointment ID | Patient ID | Nombre  | Apellido  | DNI        | F. nacimiento | Teléfono  | Especialidad     |
-|----------------|------------|---------|-----------|------------|---------------|-----------|------------------|
-| A010           | P005       | David   | Wilson    | 12345674E  | 23/06/1960    | 773446315 | Medicina general |
-| A019           | P014       | Alex    | Taylor    | 45678901D  | 27/02/1968    | 729226251 | Medicina general |
-| A039           | P019       | Sarah   | Miller    | 90123456I  | 24/05/1975    | 861805886 | Medicina general |
-| A012           | P003       | Laura   | Jones     | 12345672C  | 21/08/2018    | 839702984 | Pediatría        |
-| A016           | P037       | Robert  | Williams  | 18181818A  | 05/02/2017    | 888680019 | Pediatría        |
-| A011           | P022       | John    | Brown     | 22222222L  | 10/05/1955    | 622109957 | Oncología        |
-| A013           | P012       | Laura   | Davis     | 23456789B  | 08/12/1947    | 813566604 | Oncología        |
-| A001           | P034       | Alex    | Smith     | 15151515X  | 26/01/1950    | 837465773 | Geriatría        |
-| A003           | P048       | Emily   | Miller    | 29292929L  | 24/03/1983    | 872098938 | Dermatología     |
-| A006           | P045       | Linda   | Miller    | 26262626I  | 25/04/1966    | 757961653 | Cardiología      |
+| Appointment ID | Patient ID | Nombre | Apellido | DNI       | F. nacimiento | Teléfono  | Especialidad     |
+|----------------|------------|--------|----------|-----------|---------------|-----------|------------------|
+| A037           | P005       | David  | Wilson   | 12345674E | 23/06/1960    | 773446315 | Oncología        |
+| A019           | P014       | Alex   | Taylor   | 45678901D | 27/02/1968    | 729226251 | Medicina general |
+| A039           | P019       | Sarah  | Miller   | 90123456I | 24/05/1975    | 861805886 | Pediatría        |
+| A012           | P003       | Laura  | Jones    | 12345672C | 21/08/2018    | 839702984 | Pediatría        |
+| A016           | P037       | Robert | Williams | 18181818A | 05/02/2017    | 888680019 | Pediatría        |
+| A017           | P022       | John   | Brown    | 22222222L | 10/05/1955    | 622109957 | Oncología        |
+| A013           | P012       | Laura  | Davis    | 23456789B | 08/12/1947    | 813566604 | Oncología        |
+| A001           | P034       | Alex   | Smith    | 15151515X | 26/01/1950    | 837465773 | Geriatría        |
+| A003           | P048       | Emily  | Miller   | 29292929L | 24/03/1983    | 872098938 | Dermatología     |
+| A042           | P045       | Linda  | Miller   | 26262626I | 25/04/1966    | 757961653 | Dermatología     |
+
+
 
 Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejemplo:
 | Nombre   | Apellido   | DNI       | Fecha de nacimiento | Teléfono     |
