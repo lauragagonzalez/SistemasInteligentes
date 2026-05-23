@@ -74,13 +74,13 @@ public class AgenteRecepcion extends Agent {
 
     // Devuelve null si es válida, o el mensaje de error si no lo es
     private String validarFecha(String fecha) {
-        if (!fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            return "Formato incorrecto (debe ser YYYY-MM-DD)";
+        if (!fecha.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            return "Formato incorrecto (debe ser DD/MM/YYYY)";
         }
         try {
-            LocalDate fechaNac = LocalDate.parse(fecha, DateTimeFormatter.ISO_LOCAL_DATE);
-            LocalDate hoy      = LocalDate.now();
-
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate fechaNac = LocalDate.parse(fecha, formatter); // <-- CAMBIADO
+            LocalDate hoy = LocalDate.now();
             if (fechaNac.isAfter(hoy)) {
                 return "La fecha de nacimiento no puede ser futura";
             }
@@ -108,7 +108,7 @@ public class AgenteRecepcion extends Agent {
         campoNombre          = new JTextField();
         campoApellido        = new JTextField();
         campoDni             = new JTextField();
-        campoFechaNacimiento = new JTextField("YYYY-MM-DD");
+        campoFechaNacimiento = new JTextField("DD/MM/YYYY");
         campoTelefono        = new JTextField();
 
         panelFormulario.add(new JLabel("  Nombre:"));
@@ -150,7 +150,9 @@ public class AgenteRecepcion extends Agent {
         String dni      = campoDni.getText().trim();
         String fecha    = campoFechaNacimiento.getText().trim();
         String telefono = campoTelefono.getText().trim();
-
+        
+        
+       
         StringBuilder errores = new StringBuilder();
 
         if (nombre.isEmpty()) {
@@ -179,8 +181,20 @@ public class AgenteRecepcion extends Agent {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        
+        // Convertir 
+        String fechaConvertida;
+        try {
+            DateTimeFormatter entrada = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter salida  = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            fechaConvertida = LocalDate.parse(fecha, entrada).format(salida);
+        } catch (Exception e) {
+            fechaConvertida = fecha;
+        }
 
-        String contenidoPaciente = dni + "," + nombre + "," + apellido + ",," + fecha + "," + telefono;
+        String contenidoPaciente = dni + "," + nombre + "," + apellido + ",," + fechaConvertida + "," + telefono;
+
 
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.addReceiver(new AID("clasificador", AID.ISLOCALNAME));
@@ -192,7 +206,7 @@ public class AgenteRecepcion extends Agent {
         campoNombre.setText("");
         campoApellido.setText("");
         campoDni.setText("");
-        campoFechaNacimiento.setText("YYYY-MM-DD");
+        campoFechaNacimiento.setText("DD/MM/YYYY");
         campoTelefono.setText("");
     }
 
