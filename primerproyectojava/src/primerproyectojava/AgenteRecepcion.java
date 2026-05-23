@@ -78,7 +78,7 @@ public class AgenteRecepcion extends Agent {
             return "Formato incorrecto (debe ser DD/MM/YYYY)";
         }
         try {
-        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(java.time.format.ResolverStyle.STRICT);
             LocalDate fechaNac = LocalDate.parse(fecha, formatter); // <-- CAMBIADO
             LocalDate hoy = LocalDate.now();
             if (fechaNac.isAfter(hoy)) {
@@ -90,7 +90,7 @@ public class AgenteRecepcion extends Agent {
             return null; // válida
 
         } catch (DateTimeParseException e) {
-            return "Fecha inexistente (ej: 31 de febrero no existe)";
+            return "Fecha inexistente (ej: 30/02/2020 no existe))";
         }
     }
 
