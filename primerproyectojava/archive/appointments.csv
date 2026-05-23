@@ -1,51 +1,44 @@
-appointment_id,patient_id,doctor_id,appointment_date,appointment_time,reason_for_visit,status
-A001,P034,D009,2023-08-09,15:15:00,Pediatric Checkup,Scheduled
-A002,P032,D004,2023-06-09,14:30:00,Vaccination,No-show
-A003,P048,D001,2023-06-28,08:00:00,Skin Rash,Cancelled
-A004,P025,D006,2023-09-01,09:15:00,Elderly Care Consultation,Cancelled
-A005,P040,D003,2023-07-06,12:45:00,General Fever,No-show
-A006,P045,D006,2023-06-19,16:15:00,Blood Pressure Check,Scheduled
-A007,P001,D007,2023-04-09,10:30:00,Cancer Screening,Scheduled
-A008,P016,D010,2023-05-24,08:45:00,Oncology Follow-up,Cancelled
-A009,P039,D010,2023-03-05,13:45:00,Chemotherapy Review,Scheduled
-A010,P005,D003,2023-01-13,15:30:00,General Consultation,Completed
-A011,P022,D007,2023-11-12,16:00:00,Tumor Evaluation,No-show
-A012,P029,D014,2023-05-07,10:00:00,Routine Checkup,Completed
-A013,P003,D002,2023-08-16,12:00:00,Child Fever,Scheduled
-A014,P012,D010,2023-05-25,10:30:00,Cancer Symptoms Review,Cancelled
-A015,P026,D013,2023-01-15,17:15:00,Pediatric Consultation,No-show
-A016,P016,D008,2023-06-30,11:00:00,Acne Treatment,Scheduled
-A017,P037,D009,2023-07-11,17:00:00,Child Emergency,Scheduled
-A018,P022,D007,2023-11-14,09:45:00,Oncology Consultation,Cancelled
-A019,P029,D001,2023-02-06,15:30:00,Dermatology Checkup,Cancelled
-A020,P014,D011,2023-12-05,15:15:00,General Practice Visit,Completed
-A021,P028,D009,2023-04-24,10:00:00,Pediatric Therapy,No-show
-A022,P005,D005,2023-11-14,13:00:00,Skin Allergy,No-show
-A023,P047,D009,2023-05-09,14:30:00,Pediatric Follow-up,Cancelled
-A024,P049,D008,2023-06-21,08:00:00,Skin Infection,Completed
-A025,P030,D014,2023-02-25,08:00:00,General Follow-up,No-show
-A026,P046,D012,2023-03-17,14:15:00,Geriatric Follow-up,Cancelled
-A027,P005,D005,2023-11-14,12:45:00,Dermatology Therapy,Scheduled
-A028,P012,D015,2023-10-29,15:30:00,Senior Checkup,No-show
-A029,P016,D010,2023-06-25,14:30:00,Oncology Checkup,Completed
-A030,P026,D001,2023-08-29,13:15:00,Skin Examination,Completed
-A031,P026,D006,2023-04-04,10:30:00,Geriatric Checkup,Completed
-A032,P048,D005,2023-11-06,10:45:00,Skin Condition Review,Scheduled
-A033,P021,D007,2023-09-23,17:45:00,Cancer Therapy,No-show
-A034,P039,D013,2023-06-13,11:30:00,Pediatric Consultation,No-show
-A035,P036,D003,2023-04-18,08:45:00,General Follow-up,Scheduled
-A036,P033,D011,2023-01-08,14:30:00,Medical Checkup,No-show
-A037,P030,D004,2023-03-28,11:00:00,Child Consultation,Scheduled
-A038,P037,D009,2023-02-23,13:00:00,Pediatric Consultation,Scheduled
-A039,P023,D002,2023-04-17,08:00:00,Vaccine Follow-up,Scheduled
-A040,P010,D009,2023-03-27,12:30:00,Pediatric Therapy,Completed
-A041,P005,D007,2023-01-01,14:00:00,Oncology Emergency,No-show
-A042,P036,D001,2023-03-21,11:15:00,Skin Emergency,Scheduled
-A043,P034,D005,2023-03-29,09:15:00,Dermatology Consultation,No-show
-A044,P031,D006,2023-09-20,12:30:00,Geriatric Follow-up,Completed
-A045,P010,D015,2023-09-28,17:00:00,Elderly Emergency,Scheduled
-A046,P019,D003,2023-12-20,13:15:00,General Consultation,Cancelled
-A047,P032,D007,2023-05-02,11:00:00,Cancer Therapy,Completed
-A048,P001,D009,2023-01-16,15:45:00,Pediatric Emergency,Cancelled
-A049,P005,D010,2023-04-30,15:30:00,Oncology Consultation,No-show
-A050,P045,D008,2023-08-16,15:00:00,Eczema Review,No-show
+appointments;;;;;
+appointment_id;patient_id;doctor_id;appointment_date;appointment_time;reason_for_visit
+A001;P034;D006;09/08/2023;15:15:00;Geriatric Checkup
+A002;P032;D004;09/06/2023;14:30:00;Vaccination
+A003;P048;D001;28/06/2023;8:00:00;Skin Rash
+A004;P025;D006;01/09/2023;9:15:00;Elderly Care Consultation
+A005;P040;D011;06/07/2023;12:45:00;General Fever
+A006;P045;D006;19/06/2023;16:15:00;Blood Pressure Check
+A007;P001;D007;09/04/2023;10:30:00;Cancer Screening
+A008;P016;D010;24/05/2023;8:45:00;Oncology Follow-up
+A009;P039;D010;05/03/2023;13:45:00;Chemotherapy Review
+;;;;;
+A011;P022;D007;12/11/2023;16:00:00;General Consultation
+A012;P003;D002;16/08/2023;12:00:00;General Consultation
+A013;P012;D010;25/05/2023;10:30:00;General Consultation
+;;;;;
+A015;P016;D008;30/06/2023;11:00:00;Acne Treatment
+A016;P037;D009;11/07/2023;17:00:00;Child Emergency
+A017;P022;D007;14/11/2023;9:45:00;Oncology Consultation
+A018;P029;D001;06/02/2023;15:30:00;Dermatology Checkup
+A019;P014;D011;05/12/2023;15:15:00;General Practice Visit
+A020;P028;D009;24/04/2023;10:00:00;Pediatric Therapy
+A021;P005;D005;14/11/2023;13:00:00;Skin Allergy
+A022;P047;D009;09/05/2023;14:30:00;General Follow-up
+A023;P049;D008;21/06/2023;8:00:00;Skin Infection
+;;;;; 
+A025;P046;D012;17/03/2023;14:15:00;General Follow-up
+A026;P005;D005;14/11/2023;12:45:00;Dermatology Therapy
+;;;;;
+A028;P016;D010;25/06/2025;14:30:00;Oncology Checkup
+A029;P027;D001;29/08/2023;13:15:00;Skin Examination
+A030;P048;D005;06/11/2023;10:45:00;Skin Condition Review
+A031;P021;D007;23/09/2023;17:45:00;Cancer Therapy
+;;;;;
+A033;P036;D011;18/04/2023;8:45:00;General Follow-up
+A034;P033;D011;08/01/2023;14:30:00;Medical Checkup
+A035;P023;D002;17/04/2023;8:00:00;Vaccine Follow-up
+A036;P010;D010;27/03/2023;12:30:00;Cancer Therapy
+A037;P005;D007;01/01/2023;14:00:00;Oncology Emergency
+A038;P031;D006;20/09/2023;12:30:00;Geriatric Follow-up
+A039;P019;D009;20/12/2023;13:15:00;General Consultation
+A040;P001;D009;16/01/2023;15:45:00;Pediatric Emergency
+A041;P005;D010;30/04/2023;15:30:00;Oncology Consultation
+A042;P045;D008;16/08/2023;15:00:00;Eczema Review
