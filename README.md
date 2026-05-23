@@ -65,20 +65,18 @@ SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'ESQUEMA.DRAWIO.PDF
 
 Introduce los siguientes pacientes para verificar el funcionamiento completo del sistema:
 
-| Patient ID | Nombre | Fecha Nacimiento | Especialidad | Motivo | Estado | Teléfono | DNI |
-|------------|---------|------------------|---------------|---------|---------|-----------|-------------|
-| P001 | David Williams | 1955-06-04 | Oncología | Cancer Screening | Scheduled | 693958518 | 12345670A |
-| P039 | Jane Wilson | 1950-12-12 | Oncología | Chemotherapy Review | Scheduled | 927113133 | 20202020C |
-| P045 | Linda Miller | 1966-04-25 | Geriatría | Blood Pressure Check | Scheduled | 757961653 | 26262626I |
-| P003 | Laura Jones | 1977-08-21 | Pediatría | Child Fever | Scheduled | 839702984 | 12345672C |
-| P037 | Robert Williams | 1999-02-05 | Pediatría | Child Emergency | Scheduled | 888680019 | 18181818A |
-| P016 | Michael Taylor | 2000-07-22 | Dermatología | Acne Treatment | Scheduled | 722338059 | 67890123F |
-| P024 | Sarah Brown | 1991-11-04 | Dermatología | Skin Infection | Scheduled | 719677744 | 44444444N |
-| P005 | David Wilson | 1960-06-23 | Dermatología | Dermatology Therapy | Scheduled | 773446315 | 12345674E |
-| P010 | Michael Taylor | 2001-10-13 | Oncología | Oncology Checkup | Scheduled | 708139673 | 12345679J |
-| P014 | Alex Taylor | 1968-02-27 | Medicina General | General Practice Visit | Scheduled | 729226251 | 45678901D |
-| P036 | Michael Wilson | 1997-12-26 | Medicina General | General Follow-up | Scheduled | 854561304 | 17171717Z |
-| P029 | David Smith | 2005-05-15 | Medicina General | Routine Checkup | Scheduled | 892360767 | 99999999S |
+| Appointment ID | Patient ID | Nombre  | Apellido  | DNI        | F. nacimiento | Teléfono  | Especialidad     |
+|----------------|------------|---------|-----------|------------|---------------|-----------|------------------|
+| A010           | P005       | David   | Wilson    | 12345674E  | 23/06/1960    | 773446315 | Medicina general |
+| A019           | P014       | Alex    | Taylor    | 45678901D  | 27/02/1968    | 729226251 | Medicina general |
+| A039           | P019       | Sarah   | Miller    | 90123456I  | 24/05/1975    | 861805886 | Medicina general |
+| A012           | P003       | Laura   | Jones     | 12345672C  | 21/08/2018    | 839702984 | Pediatría        |
+| A016           | P037       | Robert  | Williams  | 18181818A  | 05/02/2017    | 888680019 | Pediatría        |
+| A011           | P022       | John    | Brown     | 22222222L  | 10/05/1955    | 622109957 | Oncología        |
+| A013           | P012       | Laura   | Davis     | 23456789B  | 08/12/1947    | 813566604 | Oncología        |
+| A001           | P034       | Alex    | Smith     | 15151515X  | 26/01/1950    | 837465773 | Geriatría        |
+| A003           | P048       | Emily   | Miller    | 29292929L  | 24/03/1983    | 872098938 | Dermatología     |
+| A006           | P045       | Linda   | Miller    | 26262626I  | 25/04/1966    | 757961653 | Cardiología      |
 
 Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejemplo:
 | Nombre   | Apellido   | DNI       | Fecha de nacimiento | Teléfono     |
