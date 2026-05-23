@@ -82,11 +82,11 @@ Introduce los siguientes pacientes para verificar el funcionamiento completo del
 Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejemplo:
 | Nombre   | Apellido   | DNI       | Fecha de nacimiento | Teléfono     |
 |----------|------------|-----------|---------------------|--------------|
-| Laura    | Martínez   | 48219375K | 1999-03-12          | 612 345 987 | MEDICINA GENERAL
-| Carlos   | Gómez      | 73918462T | 1946-11-27          | 678 901 234 | GERIATRIA
-| Ana      | Rodríguez  | 56192748H | 2001-06-08          | 623 778 145 | MEDICINA GENERAL
-| David    | López      | 90481726M | 2015-09-21          | 655 439 820 | PEDIATRIA
-| Sofía    | Hernández  | 31874659P | 2017-01-15          | 699 120 553 | PEDIATRIA
+| Laura    | Martínez   | 48219375K | 12/03/1999          | 612345987 | MEDICINA GENERAL
+| Carlos   | Gómez      | 73918462T | 27/11/1946          | 678901234 | GERIATRIA
+| Ana      | Rodríguez  | 56192748H | 08/06/2001          | 623778145 | MEDICINA GENERAL
+| David    | López      | 90481726M | 21/09/2015          | 655439820 | PEDIATRIA
+| Sofía    | Hernández  | 31874659P | 15/01/2017          | 699120553 | PEDIATRIA
 
 
 
