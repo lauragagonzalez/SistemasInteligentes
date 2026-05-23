@@ -68,6 +68,8 @@ Introduce los siguientes pacientes para verificar el funcionamiento completo del
 |----------------|------------|--------|----------|-----------|---------------|-----------|------------------|
 | A037           | P005       | David  | Wilson   | 12345674E | 23/06/1960    | 773446315 | Oncología        |
 | A019           | P014       | Alex   | Taylor   | 45678901D | 27/02/1968    | 729226251 | Medicina general |
+| A034           | P033       | Michael| Wilson   | 14141414W | 06/02/1970    | 792321404 | Medicina general |
+| A005           | P040       | Emily  | Williams | 21212121D | 30/05/1972    | 758765381 | Medicina general |
 | A039           | P019       | Sarah  | Miller   | 90123456I | 24/05/1975    | 861805886 | Pediatría        |
 | A012           | P003       | Laura  | Jones    | 12345672C | 21/08/2018    | 839702984 | Pediatría        |
 | A016           | P037       | Robert | Williams | 18181818A | 05/02/2017    | 888680019 | Pediatría        |
@@ -75,7 +77,8 @@ Introduce los siguientes pacientes para verificar el funcionamiento completo del
 | A013           | P012       | Laura  | Davis    | 23456789B | 08/12/1947    | 813566604 | Oncología        |
 | A001           | P034       | Alex   | Smith    | 15151515X | 26/01/1950    | 837465773 | Geriatría        |
 | A003           | P048       | Emily  | Miller   | 29292929L | 24/03/1983    | 872098938 | Dermatología     |
-| A042           | P045       | Linda  | Miller   | 26262626I | 25/04/1966    | 757961653 | Dermatología     |
+| A042           | P045       | Linda  | Miller   | 26262626I | 25/04/1966    | 757961653 | Geriatría        |
+
 
 
 
