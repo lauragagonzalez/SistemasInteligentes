@@ -58,7 +58,7 @@ El sistema está compuesto por cuatro agentes que se comunican mediante mensajes
 3. `AgenteClasificador` notifica al monitor con `EN_ESPERA`.
 4. `AgenteMedico` recibe al paciente → notifica al monitor con `EN_CONSULTA` → al finalizar notifica con `ATENDIDO`.
 
-SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'ESQUEMA.DRAWIO.PDF
+SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'SI.DRAWIO.PDF
 
 
 ## Datos de ejemplo
