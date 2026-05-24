@@ -9,10 +9,11 @@ import jade.lang.acl.MessageTemplate;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Scanner;
 
 import jade.domain.DFService;
@@ -33,11 +34,13 @@ public class AgenteClasificador extends Agent {
     private Map<String, String>  motivoPorPaciente       = new HashMap<>();
     private Map<String, String>  fechaCitaPorPaciente    = new HashMap<>();
     private Map<String, String>  idPorDni                = new HashMap<>();
-    private Map<String, Integer> colasPorEspecialidad    = new HashMap<>();
     private Map<String, Boolean> tieneCitaPorPaciente    = new HashMap<>();
     private Map<String, String>  salaPorDoctor           = new HashMap<>();
 
-    private final List<String> colaEspera = new ArrayList<>();
+    private final Map<String, Map<String, Queue<String>>> colasPorEspecialidad = new HashMap<>();
+
+    private static final List<String> NIVELES = List.of("CITA", "ALTA", "MEDIA", "NORMAL");
+
 
     @Override
     protected void setup() {
@@ -96,35 +99,27 @@ public class AgenteClasificador extends Agent {
 
                     if (nombreMedico != null) {
                         enviarAlMedico(nombreMedico, mensajeParaMedico);
+                        recalcularTiemposEspera();
                     } else {
-                        insertarEnColaOrdenada(mensajeParaMedico);
-                        imprimirCola();
+                        encolarPaciente(mensajeParaMedico, especialidad, prioridad);
+                        imprimirColas();
+                        recalcularTiemposEspera();
 
-                        int enCola = colasPorEspecialidad.getOrDefault(especialidad, 0) + 1;
-                        colasPorEspecialidad.put(especialidad, enCola);
-
+                        int posicion = posicionEnCola(especialidad, prioridad, mensajeParaMedico);
                         System.out.println("Clasificador: medico no disponible para " + especialidad
-                                + ". EN ESPERA. Cola = " + colaEspera.size());
+                                + ". EN ESPERA. Posicion en cola = " + posicion);
 
-                        // --- NUEVO: notificar al monitor que el paciente está en espera ---
-                        int posicionEnCola = colaEspera.indexOf(mensajeParaMedico);
-                        int segundosEspera = (posicionEnCola + 1) * 90;
-
+                        String dni = paciente.split(",")[0].trim();
                         String nombreMonitor = buscarMonitorEnDF();
                         if (nombreMonitor != null) {
                             String msgMonitor = "EN_ESPERA," + mensajeParaMedico
-                                    + ",espera_estimada=" + segundosEspera + "s";
+                                    + ",posicion=" + posicion;
                             ACLMessage avisoMonitor = new ACLMessage(ACLMessage.INFORM);
                             avisoMonitor.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
                             avisoMonitor.setContent(msgMonitor);
                             send(avisoMonitor);
-                            System.out.println("Clasificador: EN_ESPERA enviado al monitor para "
-                                    + mensajeParaMedico.split(",")[0]);
+                            System.out.println("Clasificador: EN_ESPERA enviado al monitor para " + dni);
                         }
-                        // --- FIN NUEVO ---
-
-                        // Recalcular y notificar tiempos a todos los de la cola
-                        recalcularTiemposEspera();
                     }
 
                 } else {
@@ -133,59 +128,138 @@ public class AgenteClasificador extends Agent {
             }
         });
 
-        addBehaviour(new TickerBehaviour(this, 3000) {
+
+        addBehaviour(new TickerBehaviour(this, 5_000) {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onTick() {
-                if (colaEspera.isEmpty()) return;
+                boolean huboAsignacion = false;
 
-                List<String> pendientes = new ArrayList<>(colaEspera);
-                colaEspera.clear();
+                for (String especialidad : colasPorEspecialidad.keySet()) {
+                    while (true) {
+                        String medicoDisponible = buscarMedicoEnDF(especialidad);
+                        if (medicoDisponible == null) break;
 
-                for (String mensajeParaMedico : pendientes) {
-                    String esp = "medicina_general";
-                    for (String parte : mensajeParaMedico.split(",")) {
-                        if (parte.startsWith("especialidad_asignada=")) {
-                            esp = parte.replace("especialidad_asignada=", "").trim();
-                        }
-                    }
+                        String siguiente = siguientePaciente(especialidad);
+                        if (siguiente == null) break;
 
-                    String medicoDisponible = buscarMedicoEnDF(esp);
-                    if (medicoDisponible != null) {
-                        enviarAlMedico(medicoDisponible, mensajeParaMedico);
-                        int restantes = colasPorEspecialidad.getOrDefault(esp, 1) - 1;
-                        colasPorEspecialidad.put(esp, Math.max(0, restantes));
-                    } else {
-                        insertarEnColaOrdenada(mensajeParaMedico);
-                        System.out.println("Clasificador: sin medico libre para " + esp + ", vuelve a cola.");
+                        enviarAlMedico(medicoDisponible, siguiente);
+                        huboAsignacion = true;
+                        System.out.println("Clasificador: asignado desde cola ["
+                                + especialidad + "] → " + siguiente.split(",")[0]);
                     }
                 }
 
-                if (colaEspera.size() < pendientes.size()) {
-                    System.out.println("Clasificador: cola vaciada parcialmente. Quedan = " + colaEspera.size());
+                if (huboAsignacion) {
+                    System.out.println("Clasificador: reasignacion completada.");
+                    imprimirColas();
                 }
+
+                recalcularTiemposEspera();
             }
         });
+    }
+
+
+    private void encolarPaciente(String mensajeParaMedico, String especialidad, String prioridad) {
+        colasPorEspecialidad
+                .computeIfAbsent(especialidad, k -> new HashMap<>())
+                .computeIfAbsent(prioridad, k -> new LinkedList<>())
+                .add(mensajeParaMedico);
+    }
+
+
+    private String siguientePaciente(String especialidad) {
+        Map<String, Queue<String>> subcolas = colasPorEspecialidad.get(especialidad);
+        if (subcolas == null) return null;
+
+        for (String nivel : NIVELES) {
+            Queue<String> cola = subcolas.get(nivel);
+            if (cola != null && !cola.isEmpty()) return cola.poll();
+        }
+        return null;
+    }
+
+    // Calcula la posición global del paciente
+    private int posicionEnCola(String especialidad, String prioridad, String mensaje) {
+        Map<String, Queue<String>> subcolas = colasPorEspecialidad.get(especialidad);
+        if (subcolas == null) return 1;
+
+        int posicion = 0;
+        for (String nivel : NIVELES) {
+            Queue<String> cola = subcolas.get(nivel);
+            if (cola == null) continue;
+            if (nivel.equals(prioridad)) {
+                posicion += cola.size(); // el paciente ya está dentro, es el último de su nivel
+                break;
+            }
+            posicion += cola.size();
+        }
+        return posicion;
+    }
+
+    private boolean todasLasColasVacias() {
+        for (Map<String, Queue<String>> subcolas : colasPorEspecialidad.values()) {
+            for (Queue<String> cola : subcolas.values()) {
+                if (!cola.isEmpty()) return false;
+            }
+        }
+        return true;
+    }
+
+    private void imprimirColas() {
+        System.out.println("\n--- COLAS POR ESPECIALIDAD Y PRIORIDAD ---");
+        if (todasLasColasVacias()) {
+            System.out.println("(todas las colas vacías)");
+            return;
+        }
+        for (Map.Entry<String, Map<String, Queue<String>>> entry : colasPorEspecialidad.entrySet()) {
+            String especialidad = entry.getKey();
+            Map<String, Queue<String>> subcolas = entry.getValue();
+            boolean tieneAlgo = subcolas.values().stream().anyMatch(q -> !q.isEmpty());
+            if (!tieneAlgo) continue;
+
+            System.out.println("[" + especialidad + "]");
+            int posGlobal = 1;
+            for (String nivel : NIVELES) {
+                Queue<String> cola = subcolas.get(nivel);
+                if (cola == null || cola.isEmpty()) continue;
+                for (String msg : cola) {
+                    String dni = msg.split(",")[0];
+                    String cita = extraerCampo(msg, "cita_previa=");
+                    System.out.println("  " + posGlobal++ + ". [" + nivel + "] DNI=" + dni + " | cita=" + cita);
+                }
+            }
+        }
     }
 
     private void recalcularTiemposEspera() {
         String nombreMonitor = buscarMonitorEnDF();
         if (nombreMonitor == null) return;
 
-        for (int i = 0; i < colaEspera.size(); i++) {
-            String mensaje = colaEspera.get(i);
-            String dni = mensaje.split(",")[0];
-            int segundosEspera = (i + 1) * 90; // 90s por consulta
-
-            ACLMessage aviso = new ACLMessage(ACLMessage.INFORM);
-            aviso.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-            aviso.setContent("ACTUALIZAR_ESPERA," + dni + ",espera_estimada=" + segundosEspera + "s");
-            send(aviso);
+        int totalEnviados = 0;
+        for (Map.Entry<String, Map<String, Queue<String>>> entry : colasPorEspecialidad.entrySet()) {
+            int posicion = 1;
+            for (String nivel : NIVELES) {
+                Queue<String> cola = entry.getValue().get(nivel);
+                if (cola == null) continue;
+                for (String mensaje : cola) {
+                    String dni = mensaje.split(",")[0].trim();
+                    ACLMessage aviso = new ACLMessage(ACLMessage.INFORM);
+                    aviso.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
+                    aviso.setContent("ACTUALIZAR_ESPERA," + dni + ",posicion=" + posicion++);
+                    send(aviso);
+                    totalEnviados++;
+                }
+            }
         }
-
-        System.out.println("Clasificador: tiempos de espera recalculados para " + colaEspera.size() + " pacientes.");
+        if (totalEnviados > 0) {
+            System.out.println("Clasificador: posiciones recalculadas para "
+                    + totalEnviados + " pacientes.");
+        }
     }
+
 
     private void crearAgentesMedicos() {
         try {
@@ -223,6 +297,7 @@ public class AgenteClasificador extends Agent {
             e.printStackTrace();
         }
     }
+
 
     private void enviarAlMedico(String nombreMedico, String contenido) {
         ACLMessage mensajeMedico = new ACLMessage(ACLMessage.REQUEST);
@@ -262,26 +337,22 @@ public class AgenteClasificador extends Agent {
         return null;
     }
 
+
     private void cargarPacientes() {
         try {
             Scanner sc = new Scanner(new File("archive/patients.csv"), "UTF-8");
-
             while (sc.hasNextLine()) {
                 String linea = sc.nextLine().trim();
                 if (linea.isEmpty()) continue;
                 String[] datos = linea.split(";");
-
                 if (datos.length >= 12) {
                     String patientId = datos[0].trim();
                     String dni       = datos[11].trim();
-                    if (!dni.isEmpty()) {
-                        idPorDni.put(dni, patientId);
-                    }
+                    if (!dni.isEmpty()) idPorDni.put(dni, patientId);
                 }
             }
             sc.close();
             System.out.println("Clasificador: pacientes cargados = " + idPorDni.size());
-
         } catch (Exception e) {
             System.out.println("Clasificador: error leyendo patients.csv");
             e.printStackTrace();
@@ -291,23 +362,20 @@ public class AgenteClasificador extends Agent {
     private void guardarPacienteNuevo(String paciente, String especialidad, String prioridad) {
         String[] datos = paciente.split(",");
         if (datos.length < 1) return;
-
         String dni = datos[0].trim();
         if (idPorDni.containsKey(dni)) {
             System.out.println("Clasificador: paciente ya registrado (DNI: " + dni + ")");
             return;
         }
-
         String nuevoId  = generarNuevoId();
         String nombre   = datos.length > 1 ? datos[1].trim() : "";
         String apellido = datos.length > 2 ? datos[2].trim() : "";
         String fechaNac = datos.length > 4 ? datos[4].trim() : "";
         String telefono = datos.length > 5 ? datos[5].trim() : "";
         String hoy      = java.time.LocalDate.now().toString();
-
         try (FileWriter fw = new FileWriter("archive/patients.csv", true)) {
-        	fw.write(nuevoId + ";" + nombre + ";" + apellido + ";;"
-        	        + fechaNac + ";" + telefono + ";;;" + hoy + ";;;" + dni + "\n");
+            fw.write(nuevoId + ";" + nombre + ";" + apellido + ";;"
+                    + fechaNac + ";" + telefono + ";;;" + hoy + ";;;" + dni + "\n");
             idPorDni.put(dni, nuevoId);
             System.out.println("Clasificador: nuevo paciente guardado " + nuevoId + " (DNI: " + dni + ")");
         } catch (Exception e) {
@@ -320,27 +388,12 @@ public class AgenteClasificador extends Agent {
         int max = idPorDni.values().stream()
                 .filter(id -> id.matches("P\\d+"))
                 .mapToInt(id -> Integer.parseInt(id.substring(1)))
-                .max()
-                .orElse(0);
+                .max().orElse(0);
         return String.format("P%03d", max + 1);
     }
 
-    private String normalizarEspecialidad(String especialidad) {
-        if (especialidad == null) return "medicina_general";
-        switch (especialidad.toLowerCase().trim()) {
-            case "cardiology":       case "cardiologia":      return "cardiologia";
-            case "pediatrics":       case "pediatria":        return "pediatria";
-            case "geriatrics":       case "geriatria":        return "geriatria";
-            case "oncology":         case "oncologia":        return "oncologia";
-            case "neurology":        case "neurologia":       return "neurologia";
-            case "traumatology":     case "traumatologia":    return "traumatologia";
-            case "psychiatry":       case "psiquiatria":      return "psiquiatria";
-            case "dermatology":      case "dermatologia":     return "dermatologia";
-            case "gynecology":       case "ginecologia":      return "ginecologia";
-            case "general practice": case "medicina_general": return "medicina_general";
-            default: return especialidad.toLowerCase().trim();
-        }
-    }
+
+    // Carga de datos de clasificación (doctors + appointments)
 
     private void cargarDatosClasificacion() {
         Map<String, String> especialidadPorDoctor = new HashMap<>();
@@ -348,7 +401,6 @@ public class AgenteClasificador extends Agent {
             Scanner scDoctors = new Scanner(new File("archive/doctors.csv"), "UTF-8");
             if (scDoctors.hasNextLine()) scDoctors.nextLine();
             if (scDoctors.hasNextLine()) scDoctors.nextLine();
-
             while (scDoctors.hasNextLine()) {
                 String linea = scDoctors.nextLine().trim();
                 if (linea.isEmpty()) continue;
@@ -371,7 +423,6 @@ public class AgenteClasificador extends Agent {
         try {
             Scanner scAppointments = new Scanner(new File("archive/appointments.csv"), "UTF-8");
             if (scAppointments.hasNextLine()) scAppointments.nextLine();
-
             while (scAppointments.hasNextLine()) {
                 String linea = scAppointments.nextLine().trim();
                 if (linea.isEmpty()) continue;
@@ -381,8 +432,7 @@ public class AgenteClasificador extends Agent {
                     String doctorId       = datos[2].trim();
                     String fechaCita      = datos[3].trim();
                     String motivoConsulta = datos[5].trim();
-
-                    String especialidad = especialidadPorDoctor.get(doctorId);
+                    String especialidad   = especialidadPorDoctor.get(doctorId);
                     if (especialidad != null && debeActualizarCita(patientId, fechaCita, motivoConsulta)) {
                         especialidadPorPaciente.put(patientId, especialidad);
                         prioridadPorPaciente.put(patientId, calcularPrioridadDesdeMotivo(motivoConsulta, especialidad));
@@ -408,6 +458,9 @@ public class AgenteClasificador extends Agent {
         return nuevaFecha.compareTo(fechaCitaPorPaciente.get(patientId)) > 0;
     }
 
+
+    // Lógica de clasificación y prioridad
+
     private String clasificarPaciente(String paciente) {
         String[] datos = paciente.split(",");
         if (datos.length < 5) {
@@ -416,7 +469,9 @@ public class AgenteClasificador extends Agent {
         }
         String dni       = datos[0].trim();
         String patientId = idPorDni.get(dni);
-        if (patientId != null && especialidadPorPaciente.containsKey(patientId)) {
+        if (patientId != null
+                && tieneCitaPorPaciente.getOrDefault(patientId, false)
+                && especialidadPorPaciente.containsKey(patientId)) {
             System.out.println("Clasificador: paciente encontrado por DNI " + dni + " → " + patientId);
             System.out.println("Clasificador: cita usada = " + fechaCitaPorPaciente.get(patientId)
                     + ", motivo = " + motivoPorPaciente.get(patientId));
@@ -443,21 +498,23 @@ public class AgenteClasificador extends Agent {
 
     private String calcularPrioridad(String paciente) {
         String[] datos = paciente.split(",");
-        if (datos.length < 1) return "DESCONOCIDA";
-
+        if (datos.length < 1) return "NORMAL";
         String dni       = datos[0].trim();
         String patientId = idPorDni.get(dni);
-        int puntuacion   = 1;
 
+        // Si tiene cita, máxima prioridad directamente
+        if (patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false)) {
+            return "CITA";
+        }
+
+        int puntuacion = 1;
         if (patientId != null && prioridadPorPaciente.containsKey(patientId)) {
             String prioridadBase = prioridadPorPaciente.get(patientId);
             if      (prioridadBase.equalsIgnoreCase("ALTA"))  puntuacion = 3;
             else if (prioridadBase.equalsIgnoreCase("MEDIA")) puntuacion = 2;
             else                                               puntuacion = 1;
+            puntuacion += 1;
         }
-
-        if (patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false)) puntuacion += 1;
-
         if (datos.length >= 5) {
             try {
                 int edad = java.time.LocalDate.now().getYear()
@@ -465,21 +522,20 @@ public class AgenteClasificador extends Agent {
                 if (edad < 5 || edad > 75) puntuacion += 1;
                 else if (edad > 65)        puntuacion += 1;
             } catch (Exception e) {
-                return "DESCONOCIDA";
+                return "NORMAL";
             }
         }
 
-        if (patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false)) return "CITA";
         if (puntuacion >= 3) return "ALTA";
         if (puntuacion == 2) return "MEDIA";
         return "NORMAL";
     }
 
     private String calcularPrioridadDesdeMotivo(String motivoConsulta, String especialidad) {
-        if (motivoConsulta.equalsIgnoreCase("Emergency"))                             return "ALTA";
-        if (especialidad.equalsIgnoreCase("oncologia"))                               return "ALTA";
+        if (motivoConsulta.equalsIgnoreCase("Emergency"))                          return "ALTA";
+        if (especialidad.equalsIgnoreCase("oncologia"))                            return "ALTA";
         if (motivoConsulta.equalsIgnoreCase("Therapy")
-         || motivoConsulta.equalsIgnoreCase("Consultation"))                          return "MEDIA";
+         || motivoConsulta.equalsIgnoreCase("Consultation"))                       return "MEDIA";
         return "NORMAL";
     }
 
@@ -491,21 +547,22 @@ public class AgenteClasificador extends Agent {
         return patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false);
     }
 
-    private int nivelPrioridadCola(String mensaje) {
-        if (mensaje.contains("cita_previa=SI") || mensaje.contains("prioridad_asignada=CITA")) return 4;
-        if (mensaje.contains("prioridad_asignada=ALTA"))  return 3;
-        if (mensaje.contains("prioridad_asignada=MEDIA")) return 2;
-        return 1;
-    }
 
-    private void insertarEnColaOrdenada(String mensaje) {
-        int nivelNuevo = nivelPrioridadCola(mensaje);
-        int posicion   = 0;
-        while (posicion < colaEspera.size()) {
-            if (nivelNuevo > nivelPrioridadCola(colaEspera.get(posicion))) break;
-            posicion++;
+    private String normalizarEspecialidad(String especialidad) {
+        if (especialidad == null) return "medicina_general";
+        switch (especialidad.toLowerCase().trim()) {
+            case "cardiology":       case "cardiologia":      return "cardiologia";
+            case "pediatrics":       case "pediatria":        return "pediatria";
+            case "geriatrics":       case "geriatria":        return "geriatria";
+            case "oncology":         case "oncologia":        return "oncologia";
+            case "neurology":        case "neurologia":       return "neurologia";
+            case "traumatology":     case "traumatologia":    return "traumatologia";
+            case "psychiatry":       case "psiquiatria":      return "psiquiatria";
+            case "dermatology":      case "dermatologia":     return "dermatologia";
+            case "gynecology":       case "ginecologia":      return "ginecologia";
+            case "general practice": case "medicina_general": return "medicina_general";
+            default: return especialidad.toLowerCase().trim();
         }
-        colaEspera.add(posicion, mensaje);
     }
 
     private String extraerCampo(String mensaje, String campo) {
@@ -513,22 +570,6 @@ public class AgenteClasificador extends Agent {
             if (parte.startsWith(campo)) return parte.replace(campo, "").trim();
         }
         return "-";
-    }
-
-    private void imprimirCola() {
-        System.out.println("\n--- COLA DE ESPERA ACTUAL ---");
-        if (colaEspera.isEmpty()) { System.out.println("(vacía)"); return; }
-        for (int i = 0; i < colaEspera.size(); i++) {
-            String mensaje      = colaEspera.get(i);
-            String dni          = mensaje.split(",")[0];
-            String prioridad    = extraerCampo(mensaje, "prioridad_asignada=");
-            String cita         = extraerCampo(mensaje, "cita_previa=");
-            String especialidad = extraerCampo(mensaje, "especialidad_asignada=");
-            System.out.println((i + 1) + ". DNI=" + dni
-                    + " | prioridad=" + prioridad
-                    + " | cita=" + cita
-                    + " | especialidad=" + especialidad);
-        }
     }
 
     @Override
