@@ -70,7 +70,6 @@ Introduce los siguientes pacientes para verificar el funcionamiento completo del
 | A019           | P014       | Alex   | Taylor   | 45678901D | 27/02/1968    | 729226251 | Medicina general |
 | A034           | P033       | Michael| Wilson   | 14141414W | 06/02/1970    | 792321404 | Medicina general |
 | A005           | P040       | Emily  | Williams | 21212121D | 30/05/1972    | 758765381 | Medicina general |
-| A039           | P019       | Sarah  | Miller   | 90123456I | 24/05/1975    | 861805886 | Pediatría        |
 | A012           | P003       | Laura  | Jones    | 12345672C | 21/08/2018    | 839702984 | Pediatría        |
 | A016           | P037       | Robert | Williams | 18181818A | 05/02/2017    | 888680019 | Pediatría        |
 | A017           | P022       | John   | Brown    | 22222222L | 10/05/1955    | 622109957 | Oncología        |
