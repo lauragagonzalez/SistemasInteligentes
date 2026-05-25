@@ -22,8 +22,7 @@ public class AgenteMedico extends Agent {
         if (args != null && args.length > 0) {
             especialidad = args[0].toString().toLowerCase().trim();
         }
-        
-      
+
         if (args != null && args.length > 1) {
             sala = args[1].toString().trim();
         } else {
@@ -50,6 +49,7 @@ public class AgenteMedico extends Agent {
                         return;
                     }
 
+
                     registrarEnDF();
                     System.out.println("Medico [" + getLocalName() + "]: disponible de nuevo.");
 
@@ -62,15 +62,16 @@ public class AgenteMedico extends Agent {
                         ACLMessage notifFin = new ACLMessage(ACLMessage.INFORM);
                         notifFin.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
                         notifFin.setContent("ATENDIDO," + msgEnProceso.getContent()
-                        	+ ",medico=" + getLocalName()
-                        	+ ",sala=" + sala);
+                                + ",medico=" + getLocalName()
+                                + ",sala=" + sala);
                         myAgent.send(notifFin);
                         System.out.println("Medico [" + getLocalName() + "]: monitor notificado -> ATENDIDO");
                     }
 
                     msgEnProceso = null;
-                    return;
+
                 }
+
 
                 MessageTemplate filtro = MessageTemplate.and(
                     MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
@@ -79,7 +80,7 @@ public class AgenteMedico extends Agent {
 
                 ACLMessage msg = myAgent.receive(filtro);
                 if (msg == null) {
-                    block();
+                    block(6_000);
                     return;
                 }
 
@@ -87,7 +88,7 @@ public class AgenteMedico extends Agent {
                 System.out.println("\nMedico [" + getLocalName() + "]: paciente entrando a consulta...");
                 System.out.println("Medico [" + getLocalName() + "]: datos -> " + contenido);
 
-                // Desregistrarse del DF — ocupado
+           
                 try {
                     DFService.deregister(myAgent);
                     System.out.println("Medico [" + getLocalName() + "]: ocupado, desregistrado del DF.");
@@ -107,7 +108,8 @@ public class AgenteMedico extends Agent {
                 }
 
                 int segundosConsulta = 90 + (int)(Math.random() * 5);
-                System.out.println("Medico [" + getLocalName() + "]: consultando durante " + segundosConsulta + " segundos...");
+                System.out.println("Medico [" + getLocalName() + "]: consultando durante "
+                        + segundosConsulta + " segundos...");
                 tiempoFinConsulta = System.currentTimeMillis() + (segundosConsulta * 1000L);
                 msgEnProceso = msg;
             }
@@ -115,7 +117,6 @@ public class AgenteMedico extends Agent {
     }
 
     private void registrarEnDF() {
-        // Deregister silencioso primero para evitar conflictos si ya existe una entrada previa
         try { DFService.deregister(this); } catch (FIPAException ignored) { }
         try {
             DFAgentDescription dfd = new DFAgentDescription();
