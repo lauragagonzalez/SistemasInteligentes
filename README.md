@@ -94,7 +94,7 @@ Luego puedes porbra a inventarle alguno qu ellegue sin appointment como por ejem
 
 ## Declaración de uso de IA
 
-En el desarrollo de esta práctica se ha utilizado Claude  como herramienta de asistencia en programación.
+En el desarrollo de esta práctica se ha utilizado Claude como herramienta de asistencia en programación.
 
 El uso de IA se ha limitado a:
 
@@ -102,5 +102,5 @@ El uso de IA se ha limitado a:
 - Implementación y ajuste de las interfaces gráficas
 - Asistencia en la transcripción y adaptación del código Java debido a la falta de experiencia previa con el lenguaje.
 
-- El uso de IA solo se uso como herramienta de apoyo, no sustituye el tarbajo de desarrollo y compresión realizado por los miembros del grupo.
+El uso de IA solo se uso como herramienta de apoyo, no sustituye el trabajo de desarrollo realizado por los miembros del grupo.
 
