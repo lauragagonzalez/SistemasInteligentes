@@ -23,18 +23,17 @@ public class AgenteMonitor extends Agent {
     private DefaultTableModel modeloTabla;
     private JLabel etiquetaTotal;
     private JLabel etiquetaCita;
-    private JLabel etiquetaAlta;
-    private JLabel etiquetaMedia;
-    private JLabel etiquetaNormal;
-    private int totalPacientes = 0;
-    private int totalCita      = 0;
-    private int totalAlta      = 0;
-    private int totalMedia     = 0;
-    private int totalNormal    = 0;
+    private JLabel etiquetaUrgenciaAlta;
+    private JLabel etiquetaUrgenciaMedia;
+    private JLabel etiquetaUrgenciaBaja;
 
-    private Map<String, Integer> filasPorDni = new HashMap<>();
+    private int totalPacientes    = 0;
+    private int totalCita         = 0;
+    private int totalUrgenciaAlta = 0;
+    private int totalUrgenciaMedia= 0;
+    private int totalUrgenciaBaja = 0;
 
-    // posición en cola por DNI 
+    private Map<String, Integer> filasPorDni    = new HashMap<>();
     private Map<String, Integer> posicionPorDni = new HashMap<>();
 
     @Override
@@ -77,7 +76,7 @@ public class AgenteMonitor extends Agent {
     private void crearVentana() {
         JFrame ventana = new JFrame("Panel de Control - Hospital");
         ventana.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        ventana.setSize(1050, 560);
+        ventana.setSize(1100, 580);
         ventana.setLocationRelativeTo(null);
         ventana.setLayout(new BorderLayout(10, 10));
         ventana.getContentPane().setBackground(new Color(240, 240, 245));
@@ -88,6 +87,7 @@ public class AgenteMonitor extends Agent {
         titulo.setBorder(BorderFactory.createEmptyBorder(12, 12, 8, 0));
         ventana.add(titulo, BorderLayout.NORTH);
 
+        // ── Tabla ────────────────────────────────────────────────────────────
         String[] columnas = {"Nombre", "Especialidad", "Médico", "Sala", "Prioridad", "Espera est.", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
@@ -109,10 +109,18 @@ public class AgenteMonitor extends Agent {
                 super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
                 setHorizontalAlignment(SwingConstants.CENTER);
                 String val = value == null ? "" : value.toString();
-                if      (val.equals("CITA"))  { setBackground(new Color(120, 140, 255)); setForeground(Color.WHITE); }
-                else if (val.equals("ALTA"))  { setBackground(new Color(255, 100, 100)); setForeground(Color.WHITE); }
-                else if (val.equals("MEDIA")) { setBackground(new Color(255, 200,  80)); setForeground(new Color(80, 60, 0)); }
-                else                          { setBackground(new Color(100, 200, 130)); setForeground(new Color(0, 60, 20)); }
+                switch (val) {
+                    case "URGENCIA_ALTA":
+                        setBackground(new Color(140,   0,   0)); setForeground(Color.WHITE); break;
+                    case "URGENCIA_MEDIA":
+                        setBackground(new Color(220,  80,   0)); setForeground(Color.WHITE); break;
+                    case "URGENCIA_BAJA":
+                        setBackground(new Color(220, 170,  30)); setForeground(new Color(80, 60, 0)); break;
+                    case "CITA":
+                        setBackground(new Color(120, 140, 255)); setForeground(Color.WHITE); break;
+                    default:
+                        setBackground(new Color(100, 200, 130)); setForeground(new Color(0, 60, 20)); break;
+                }
                 if (isSelected) setBackground(new Color(180, 200, 255));
                 return this;
             }
@@ -127,14 +135,9 @@ public class AgenteMonitor extends Agent {
                 setHorizontalAlignment(SwingConstants.CENTER);
                 String val = value == null ? "" : value.toString();
                 if (val.equals("-") || val.isEmpty()) {
-                    setBackground(new Color(220, 240, 220));
-                    setForeground(new Color(0, 120, 40));
-                } else if (val.equals("En breve")) {
-                    setBackground(new Color(255, 243, 180));
-                    setForeground(new Color(130, 90, 0));
+                    setBackground(new Color(220, 240, 220)); setForeground(new Color(0, 120, 40));
                 } else {
-                    setBackground(new Color(255, 243, 205));
-                    setForeground(new Color(130, 90, 0));
+                    setBackground(new Color(255, 243, 205)); setForeground(new Color(130, 90, 0));
                 }
                 if (isSelected) setBackground(new Color(180, 200, 255));
                 return this;
@@ -161,33 +164,28 @@ public class AgenteMonitor extends Agent {
         scroll.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
         ventana.add(scroll, BorderLayout.CENTER);
 
+        // ── Panel de estadísticas: 5 tarjetas ────────────────────────────────
         JPanel panelStats = new JPanel(new GridLayout(1, 5, 10, 0));
         panelStats.setBorder(BorderFactory.createEmptyBorder(10, 12, 12, 12));
         panelStats.setBackground(new Color(240, 240, 245));
 
-        etiquetaTotal  = crearTarjetaStat("Total atendidos",  "0", new Color(70,  130, 180));
-        etiquetaCita   = crearTarjetaStat("Prioridad CITA",   "0", new Color(120, 140, 255));
-        etiquetaAlta   = crearTarjetaStat("Prioridad ALTA",   "0", new Color(220,  80,  80));
-        etiquetaMedia  = crearTarjetaStat("Prioridad MEDIA",  "0", new Color(220, 170,  30));
-        etiquetaNormal = crearTarjetaStat("Prioridad NORMAL", "0", new Color(60,  180, 100));
+        etiquetaTotal        = crearTarjetaStat("0", new Color(70,  130, 180));
+        etiquetaCita         = crearTarjetaStat("0", new Color(120, 140, 255));
+        etiquetaUrgenciaAlta = crearTarjetaStat("0", new Color(140,   0,   0));
+        etiquetaUrgenciaMedia= crearTarjetaStat("0", new Color(220,  80,   0));
+        etiquetaUrgenciaBaja = crearTarjetaStat("0", new Color(200, 150,   0));
 
-        panelStats.add(envolverTarjeta(etiquetaTotal,  "Total atendidos",  new Color(70,  130, 180)));
-        panelStats.add(envolverTarjeta(etiquetaCita,   "Prioridad CITA",   new Color(120, 140, 255)));
-        panelStats.add(envolverTarjeta(etiquetaAlta,   "Prioridad ALTA",   new Color(220,  80,  80)));
-        panelStats.add(envolverTarjeta(etiquetaMedia,  "Prioridad MEDIA",  new Color(220, 170,  30)));
-        panelStats.add(envolverTarjeta(etiquetaNormal, "Prioridad NORMAL", new Color(60,  180, 100)));
+        panelStats.add(envolverTarjeta(etiquetaTotal,         "Total atendidos",   new Color(70,  130, 180)));
+        panelStats.add(envolverTarjeta(etiquetaCita,          "Prioridad CITA",    new Color(120, 140, 255)));
+        panelStats.add(envolverTarjeta(etiquetaUrgenciaAlta,  "Urgencia ALTA",     new Color(140,   0,   0)));
+        panelStats.add(envolverTarjeta(etiquetaUrgenciaMedia, "Urgencia MEDIA",    new Color(220,  80,   0)));
+        panelStats.add(envolverTarjeta(etiquetaUrgenciaBaja,  "Urgencia BAJA",     new Color(200, 150,   0)));
 
         ventana.add(panelStats, BorderLayout.SOUTH);
         ventana.setVisible(true);
-
-        // Timer cada 30s para restar el tiempo transcurrido desde el último update
-        new javax.swing.Timer(30_000, e -> actualizarTiemposEspera()).start();
     }
 
-
-    private void actualizarTiemposEspera() { }
-
-    private JLabel crearTarjetaStat(String titulo, String valor, Color color) {
+    private JLabel crearTarjetaStat(String valor, Color color) {
         JLabel lbl = new JLabel(valor, SwingConstants.CENTER);
         lbl.setFont(new Font("SansSerif", Font.BOLD, 32));
         lbl.setForeground(color);
@@ -243,7 +241,6 @@ public class AgenteMonitor extends Agent {
         String sala         = "-";
         String prioridad    = "?";
 
-
         String[] partes = datos.split(",");
         if (partes.length > 0) dni    = partes[0].trim();
         if (partes.length > 1) nombre = partes[1].trim()
@@ -271,9 +268,11 @@ public class AgenteMonitor extends Agent {
             if (fila != null) {
                 modeloTabla.setValueAt(medico,        fila, 2);
                 modeloTabla.setValueAt(sala,          fila, 3);
+                modeloTabla.setValueAt(prioridad,     fila, 4); // actualizar prioridad si viene del urgencias
                 modeloTabla.setValueAt("-",           fila, 5);
                 modeloTabla.setValueAt("En consulta", fila, 6);
             } else {
+                // Llegó directo a consulta sin pasar por espera — añadir fila
                 modeloTabla.addRow(new Object[]{nombre, especialidad, medico, sala, prioridad, "-", "En consulta"});
                 filasPorDni.put(dni, modeloTabla.getRowCount() - 1);
             }
@@ -288,10 +287,11 @@ public class AgenteMonitor extends Agent {
             totalPacientes++;
             etiquetaTotal.setText(String.valueOf(totalPacientes));
             switch (prioridad) {
-                case "CITA":  totalCita++;   etiquetaCita.setText(String.valueOf(totalCita));    break;
-                case "ALTA":  totalAlta++;   etiquetaAlta.setText(String.valueOf(totalAlta));    break;
-                case "MEDIA": totalMedia++;  etiquetaMedia.setText(String.valueOf(totalMedia));  break;
-                default:      totalNormal++; etiquetaNormal.setText(String.valueOf(totalNormal)); break;
+                case "URGENCIA_ALTA":  totalUrgenciaAlta++;  etiquetaUrgenciaAlta.setText(String.valueOf(totalUrgenciaAlta));   break;
+                case "URGENCIA_MEDIA": totalUrgenciaMedia++; etiquetaUrgenciaMedia.setText(String.valueOf(totalUrgenciaMedia)); break;
+                case "URGENCIA_BAJA":  totalUrgenciaBaja++;  etiquetaUrgenciaBaja.setText(String.valueOf(totalUrgenciaBaja));   break;
+                case "CITA":           totalCita++;          etiquetaCita.setText(String.valueOf(totalCita));                   break;
+                default: break; // NORMAL/ALTA/MEDIA del flujo normal no se contabilizan por separado
             }
         }
     }

@@ -23,6 +23,7 @@ public class AgenteMedico extends Agent {
             especialidad = args[0].toString().toLowerCase().trim();
         }
         
+      
         if (args != null && args.length > 1) {
             sala = args[1].toString().trim();
         } else {
@@ -114,6 +115,8 @@ public class AgenteMedico extends Agent {
     }
 
     private void registrarEnDF() {
+        // Deregister silencioso primero para evitar conflictos si ya existe una entrada previa
+        try { DFService.deregister(this); } catch (FIPAException ignored) { }
         try {
             DFAgentDescription dfd = new DFAgentDescription();
             dfd.setName(getAID());
