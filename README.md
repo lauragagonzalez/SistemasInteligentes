@@ -75,7 +75,7 @@ Este flujo está diseñado para comprobar el comportamiento del sistema de clasi
 |----------|------------|--------|----------|-----------|------------------|-----------|---------------------|-------------|
 | -        | -          | Laura  | Martínez | 48219375K | 12/03/1999       | 612345987 | Medicina general    | NO          |
 | -        | -          | Ana    | Rodríguez| 56192748H | 08/06/2001       | 623778145 | Medicina general    | NO          |
-| -        | -          | Carlos | Gómez    | 73918462T | 27/11/1946       | 678901234 | Medicina general    | NO          |
+| -        | -          | Carlos | Gómez    | 73967462T | 27/11/1960       | 678901234 | Medicina general    | NO          |
 | D011     | P014       | Alex   | Taylor   | 45678901D | 27/02/1968       | 729226251 | Medicina general    | SI          |
 | D011     | P033       | Michael | Wilson  | 14141414W | 06/02/1970       | 792321404 | Medicina general    | SI          |
 
