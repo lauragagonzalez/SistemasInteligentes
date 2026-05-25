@@ -25,7 +25,7 @@ public class AgenteRecepcion extends Agent {
     private JTextField campoDni;
     private JTextField campoFechaNacimiento;
     private JTextField campoTelefono;
-    private JCheckBox  checkUrgencia;       // NUEVO
+    private JCheckBox  checkUrgencia;      
     private JTextArea  areaLog;
     private JButton    botonEnviar;
 
@@ -156,7 +156,6 @@ public class AgenteRecepcion extends Agent {
         panelFormulario.add(new JLabel());
         panelFormulario.add(botonEnviar);
 
-        // ── Log ──────────────────────────────────────────────────────────────
         areaLog = new JTextArea(8, 40);
         areaLog.setEditable(false);
         areaLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
@@ -217,7 +216,7 @@ public class AgenteRecepcion extends Agent {
         msg.setContent(contenidoPaciente);
         send(msg);
 
-        String etiqueta = esUrgencia ? "[🚨 URGENCIA] " : "[Enviado] ";
+        String etiqueta = esUrgencia ? "[URGENCIA] " : "[Enviado] ";
         areaLog.append(etiqueta + nombre + " " + apellido + " (DNI: " + dni + ")\n");
 
         // Reset
