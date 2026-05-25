@@ -15,14 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Agente de Urgencias — atiende en paralelo con 3 boxes.
- *
- * Nivel de urgencia calculado automáticamente por edad:
- *   puntosEdad == 10  → URGENCIA_ALTA   (< 5 años o > 70 años)
- *   puntosEdad == 7   → URGENCIA_MEDIA  (5-15 o 60-70 años)
- *   puntosEdad == 3   → URGENCIA_BAJA   (resto)
- */
+
 public class AgenteUrgencias extends Agent {
 
     private static final long serialVersionUID = 1L;
@@ -56,7 +49,6 @@ public class AgenteUrgencias extends Agent {
             }
         }
 
-        /** Devuelve URGENCIA_ALTA, URGENCIA_MEDIA o URGENCIA_BAJA */
         static String nivelUrgencia(String msg) {
             int pts = puntosEdad(msg);
             if (pts == 10) return "URGENCIA_ALTA";
