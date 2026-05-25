@@ -61,7 +61,7 @@ El sistema está compuesto por cuatro agentes que se comunican mediante mensajes
 SE PUEDE VER EL DIAGRAMA EN EL PDF SUBIDO 'SI.DRAWIO.PDF
 
 
-## Datos de ejemplo
+
 # Flujo de pruebas del sistema (casos progresivos)
 
 Este flujo está diseñado para comprobar el comportamiento del sistema de clasificación, colas, especialidades y urgencias.
