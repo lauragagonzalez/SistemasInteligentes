@@ -36,6 +36,8 @@ public class AgenteClasificador extends Agent {
     private Map<String, String>  idPorDni                = new HashMap<>();
     private Map<String, Boolean> tieneCitaPorPaciente    = new HashMap<>();
     private Map<String, String>  salaPorDoctor           = new HashMap<>();
+    // NUEVO: guarda el doctorId asignado a cada paciente por su cita
+    private Map<String, String>  medicoPorPaciente       = new HashMap<>();
 
     private final Map<String, Map<String, Queue<String>>> colasPorEspecialidad = new HashMap<>();
 
@@ -90,35 +92,73 @@ public class AgenteClasificador extends Agent {
 
                     boolean tieneCita = pacienteTieneCita(paciente);
 
+                    // Determinar si tiene médico asignado específico
+                    String dni       = paciente.split(",")[0].trim();
+                    String patientId = idPorDni.get(dni);
+                    boolean tieneMedicoAsignado = patientId != null
+                            && medicoPorPaciente.containsKey(patientId);
+                    String medicoAsignadoStr = tieneMedicoAsignado
+                            ? "medico_" + medicoPorPaciente.get(patientId)
+                            : "cualquiera";
+
                     String mensajeParaMedico = paciente
                             + ",especialidad_asignada=" + especialidad
                             + ",prioridad_asignada="    + prioridad
-                            + ",cita_previa="           + (tieneCita ? "SI" : "NO");
+                            + ",cita_previa="           + (tieneCita ? "SI" : "NO")
+                            + ",medico_asignado="       + medicoAsignadoStr;
 
-                    String nombreMedico = buscarMedicoEnDF(especialidad);
+                    if (tieneMedicoAsignado) {
+                        // Paciente CON cita: solo va con SU médico concreto
+                        String medicoLibre = buscarMedicoEspecificoEnDF(medicoAsignadoStr);
+                        if (medicoLibre != null) {
+                            enviarAlMedico(medicoLibre, mensajeParaMedico);
+                            recalcularTiemposEspera();
+                        } else {
+                            // Su médico está ocupado → esperar en cola
+                            encolarPaciente(mensajeParaMedico, especialidad, prioridad);
+                            imprimirColas();
+                            recalcularTiemposEspera();
 
-                    if (nombreMedico != null) {
-                        enviarAlMedico(nombreMedico, mensajeParaMedico);
-                        recalcularTiemposEspera();
+                            int posicion = posicionEnCola(especialidad, prioridad, mensajeParaMedico);
+                            System.out.println("Clasificador: medico " + medicoAsignadoStr
+                                    + " ocupado. EN ESPERA. Posicion en cola = " + posicion);
+
+                            String nombreMonitor = buscarMonitorEnDF();
+                            if (nombreMonitor != null) {
+                                String msgMonitor = "EN_ESPERA," + mensajeParaMedico
+                                        + ",posicion=" + posicion;
+                                ACLMessage avisoMonitor = new ACLMessage(ACLMessage.INFORM);
+                                avisoMonitor.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
+                                avisoMonitor.setContent(msgMonitor);
+                                send(avisoMonitor);
+                                System.out.println("Clasificador: EN_ESPERA enviado al monitor para " + dni);
+                            }
+                        }
                     } else {
-                        encolarPaciente(mensajeParaMedico, especialidad, prioridad);
-                        imprimirColas();
-                        recalcularTiemposEspera();
+                        // Paciente SIN cita: cualquier médico de la especialidad sirve
+                        String nombreMedico = buscarMedicoEnDF(especialidad);
+                        if (nombreMedico != null) {
+                            enviarAlMedico(nombreMedico, mensajeParaMedico);
+                            recalcularTiemposEspera();
+                        } else {
+                            encolarPaciente(mensajeParaMedico, especialidad, prioridad);
+                            imprimirColas();
+                            recalcularTiemposEspera();
 
-                        int posicion = posicionEnCola(especialidad, prioridad, mensajeParaMedico);
-                        System.out.println("Clasificador: medico no disponible para " + especialidad
-                                + ". EN ESPERA. Posicion en cola = " + posicion);
+                            int posicion = posicionEnCola(especialidad, prioridad, mensajeParaMedico);
+                            System.out.println("Clasificador: medico no disponible para " + especialidad
+                                    + ". EN ESPERA. Posicion en cola = " + posicion);
 
-                        String dni = paciente.split(",")[0].trim();
-                        String nombreMonitor = buscarMonitorEnDF();
-                        if (nombreMonitor != null) {
-                            String msgMonitor = "EN_ESPERA," + mensajeParaMedico
-                                    + ",posicion=" + posicion;
-                            ACLMessage avisoMonitor = new ACLMessage(ACLMessage.INFORM);
-                            avisoMonitor.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
-                            avisoMonitor.setContent(msgMonitor);
-                            send(avisoMonitor);
-                            System.out.println("Clasificador: EN_ESPERA enviado al monitor para " + dni);
+                            String nombreMonitor = buscarMonitorEnDF();
+                            if (nombreMonitor != null) {
+                                String msgMonitor = "EN_ESPERA," + mensajeParaMedico
+                                        + ",posicion=" + posicion;
+                                ACLMessage avisoMonitor = new ACLMessage(ACLMessage.INFORM);
+                                avisoMonitor.addReceiver(new AID(nombreMonitor, AID.ISLOCALNAME));
+                                avisoMonitor.setContent(msgMonitor);
+                                send(avisoMonitor);
+                                System.out.println("Clasificador: EN_ESPERA enviado al monitor para " + dni);
+                            }
                         }
                     }
 
@@ -137,17 +177,39 @@ public class AgenteClasificador extends Agent {
                 boolean huboAsignacion = false;
 
                 for (String especialidad : colasPorEspecialidad.keySet()) {
-                    while (true) {
-                        String medicoDisponible = buscarMedicoEnDF(especialidad);
-                        if (medicoDisponible == null) break;
+                    // Intentamos asignar todos los pacientes posibles de esta especialidad
+                    // pero respetando el médico asignado de cada uno
+                    Map<String, Queue<String>> subcolas = colasPorEspecialidad.get(especialidad);
+                    if (subcolas == null) continue;
 
-                        String siguiente = siguientePaciente(especialidad);
-                        if (siguiente == null) break;
+                    // Recorremos por orden de prioridad
+                    for (String nivel : NIVELES) {
+                        Queue<String> cola = subcolas.get(nivel);
+                        if (cola == null || cola.isEmpty()) continue;
 
-                        enviarAlMedico(medicoDisponible, siguiente);
-                        huboAsignacion = true;
-                        System.out.println("Clasificador: asignado desde cola ["
-                                + especialidad + "] → " + siguiente.split(",")[0]);
+                        // Iteramos con un iterador para poder eliminar del medio si es necesario
+                        java.util.Iterator<String> it = cola.iterator();
+                        while (it.hasNext()) {
+                            String siguiente = it.next();
+                            String medicoAsignado = extraerCampo(siguiente, "medico_asignado=");
+
+                            String medicoDisponible;
+                            if ("cualquiera".equals(medicoAsignado) || medicoAsignado.equals("-")) {
+                                medicoDisponible = buscarMedicoEnDF(especialidad);
+                            } else {
+                                medicoDisponible = buscarMedicoEspecificoEnDF(medicoAsignado);
+                            }
+
+                            if (medicoDisponible != null) {
+                                it.remove();
+                                enviarAlMedico(medicoDisponible, siguiente);
+                                huboAsignacion = true;
+                                System.out.println("Clasificador: asignado desde cola ["
+                                        + especialidad + "] → " + siguiente.split(",")[0]
+                                        + " → " + medicoDisponible);
+                            }
+                            // Si el médico sigue ocupado, lo dejamos en cola y seguimos con el siguiente
+                        }
                     }
                 }
 
@@ -169,19 +231,6 @@ public class AgenteClasificador extends Agent {
                 .add(mensajeParaMedico);
     }
 
-
-    private String siguientePaciente(String especialidad) {
-        Map<String, Queue<String>> subcolas = colasPorEspecialidad.get(especialidad);
-        if (subcolas == null) return null;
-
-        for (String nivel : NIVELES) {
-            Queue<String> cola = subcolas.get(nivel);
-            if (cola != null && !cola.isEmpty()) return cola.poll();
-        }
-        return null;
-    }
-
-    // Calcula la posición global del paciente
     private int posicionEnCola(String especialidad, String prioridad, String mensaje) {
         Map<String, Queue<String>> subcolas = colasPorEspecialidad.get(especialidad);
         if (subcolas == null) return 1;
@@ -191,7 +240,7 @@ public class AgenteClasificador extends Agent {
             Queue<String> cola = subcolas.get(nivel);
             if (cola == null) continue;
             if (nivel.equals(prioridad)) {
-                posicion += cola.size(); // el paciente ya está dentro, es el último de su nivel
+                posicion += cola.size();
                 break;
             }
             posicion += cola.size();
@@ -226,9 +275,11 @@ public class AgenteClasificador extends Agent {
                 Queue<String> cola = subcolas.get(nivel);
                 if (cola == null || cola.isEmpty()) continue;
                 for (String msg : cola) {
-                    String dni = msg.split(",")[0];
-                    String cita = extraerCampo(msg, "cita_previa=");
-                    System.out.println("  " + posGlobal++ + ". [" + nivel + "] DNI=" + dni + " | cita=" + cita);
+                    String dni   = msg.split(",")[0];
+                    String cita  = extraerCampo(msg, "cita_previa=");
+                    String medico = extraerCampo(msg, "medico_asignado=");
+                    System.out.println("  " + posGlobal++ + ". [" + nivel + "] DNI=" + dni
+                            + " | cita=" + cita + " | medico=" + medico);
                 }
             }
         }
@@ -337,6 +388,23 @@ public class AgenteClasificador extends Agent {
         return null;
     }
 
+    /**
+     * Comprueba si un médico concreto está disponible (registrado en el DF).
+     * El médico se desregistra del DF cuando está ocupado, así que si aparece
+     * en el DF significa que está libre.
+     */
+    private String buscarMedicoEspecificoEnDF(String nombreMedico) {
+        try {
+            DFAgentDescription template = new DFAgentDescription();
+            template.setName(new AID(nombreMedico, AID.ISLOCALNAME));
+            DFAgentDescription[] result = DFService.search(this, template);
+            if (result.length > 0) return nombreMedico;
+        } catch (FIPAException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     private void cargarPacientes() {
         try {
@@ -393,8 +461,6 @@ public class AgenteClasificador extends Agent {
     }
 
 
-    // Carga de datos de clasificación (doctors + appointments)
-
     private void cargarDatosClasificacion() {
         Map<String, String> especialidadPorDoctor = new HashMap<>();
         try {
@@ -439,6 +505,8 @@ public class AgenteClasificador extends Agent {
                         motivoPorPaciente.put(patientId, motivoConsulta);
                         fechaCitaPorPaciente.put(patientId, fechaCita);
                         tieneCitaPorPaciente.put(patientId, true);
+                        // NUEVO: guardamos el médico concreto asignado a este paciente
+                        medicoPorPaciente.put(patientId, doctorId);
                     }
                 }
             }
@@ -458,8 +526,6 @@ public class AgenteClasificador extends Agent {
         return nuevaFecha.compareTo(fechaCitaPorPaciente.get(patientId)) > 0;
     }
 
-
-    // Lógica de clasificación y prioridad
 
     private String clasificarPaciente(String paciente) {
         String[] datos = paciente.split(",");
@@ -502,7 +568,6 @@ public class AgenteClasificador extends Agent {
         String dni       = datos[0].trim();
         String patientId = idPorDni.get(dni);
 
-        // Si tiene cita, máxima prioridad directamente
         if (patientId != null && tieneCitaPorPaciente.getOrDefault(patientId, false)) {
             return "CITA";
         }
