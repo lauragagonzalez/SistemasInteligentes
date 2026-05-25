@@ -87,7 +87,6 @@ public class AgenteMonitor extends Agent {
         titulo.setBorder(BorderFactory.createEmptyBorder(12, 12, 8, 0));
         ventana.add(titulo, BorderLayout.NORTH);
 
-        // ── Tabla ────────────────────────────────────────────────────────────
         String[] columnas = {"Nombre", "Especialidad", "Médico", "Sala", "Prioridad", "Espera est.", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
@@ -101,7 +100,6 @@ public class AgenteMonitor extends Agent {
         tabla.getTableHeader().setForeground(Color.WHITE);
         tabla.setSelectionBackground(new Color(200, 220, 255));
 
-        // col 4 = Prioridad
         tabla.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
@@ -126,7 +124,6 @@ public class AgenteMonitor extends Agent {
             }
         });
 
-        // col 5 = Espera est.
         tabla.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
@@ -144,7 +141,6 @@ public class AgenteMonitor extends Agent {
             }
         });
 
-        // col 6 = Estado
         tabla.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
@@ -164,7 +160,6 @@ public class AgenteMonitor extends Agent {
         scroll.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 12));
         ventana.add(scroll, BorderLayout.CENTER);
 
-        // ── Panel de estadísticas: 5 tarjetas ────────────────────────────────
         JPanel panelStats = new JPanel(new GridLayout(1, 5, 10, 0));
         panelStats.setBorder(BorderFactory.createEmptyBorder(10, 12, 12, 12));
         panelStats.setBackground(new Color(240, 240, 245));
