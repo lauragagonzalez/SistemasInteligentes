@@ -53,7 +53,7 @@ El sistema está compuesto por cuatro agentes que se comunican mediante mensajes
 ### Diagrama 
 ### Flujo de mensajes
 
-1. El recepcionista rellena el formulario → `AgenteRecepcion` envía `REQUEST` al clasificador.
+1. El recepcionista rellena el formulario → `AgenteRecepcion` envía `INFORM` al clasificador.
 2. `AgenteClasificador` determina prioridad y especialidad → busca un médico disponible en el DF → envía `REQUEST` al médico.
 3. `AgenteClasificador` notifica al monitor con `EN_ESPERA`.
 4. `AgenteMedico` recibe al paciente → notifica al monitor con `EN_CONSULTA` → al finalizar notifica con `ATENDIDO`.
